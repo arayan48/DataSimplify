@@ -1,0 +1,209 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}CITC - {{ 'app.create_entreprise.title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/administrateur/create_entreprise.css') }}">
+    <!-- Flaticon CDN -->
+    <link rel="stylesheet" href="https://cdn-uicons.flaticon.com/uicons-regular-straight/css/uicons-regular-straight.css">
+{% endblock %}
+
+{% block body %}
+<div class="create-entreprise-container" data-controller="create-entreprise">
+    <div class="create-entreprise-top">
+        <button type="button" class="btn-back" onclick="window.history.back()">
+            <i class="fi fi-rs-arrow-left"></i>
+            {{ 'app.common.back'|trans }}
+        </button>
+    </div>
+
+    <div class="create-entreprise-header">
+        <h1>{{ 'app.create_entreprise.title'|trans }}</h1>
+        <p>{{ 'app.create_entreprise.description'|trans }}</p>
+    </div>
+
+    <form method="POST" class="create-entreprise-form">
+        <div class="accordion-container">
+            <!-- Section 1: Information Entreprise -->
+            <div class="accordion-item">
+                <div class="accordion-header active">
+                    <h3>
+                        <i class="fi fi-rs-document"></i>
+                        {{ 'app.create_entreprise.section_info'|trans }}
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content active">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nom">{{ 'app.create_entreprise.company_name'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="nom" name="nom" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="siret">{{ 'app.create_entreprise.siret'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="siret" name="siret" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="secteur">{{ 'app.create_entreprise.activity_sector'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="secteur" name="secteur" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ville">{{ 'app.create_entreprise.city'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="ville" name="ville" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="codepostal">{{ 'app.create_entreprise.postal_code'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="codepostal" name="codepostal" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="pays">{{ 'app.create_entreprise.country'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="pays" name="pays" value="{{ 'app.create_entreprise.france'|trans }}" required>
+                            </div>
+                        </div>
+
+                        <div class="form-group form-row full">
+                            <label for="adresse">{{ 'app.create_entreprise.address'|trans }} <span class="required">*</span></label>
+                            <input type="text" id="adresse" name="adresse" required>
+                        </div>
+
+                        <div class="form-group form-row full">
+                            <label for="description">{{ 'app.create_entreprise.company_description'|trans }}</label>
+                            <textarea id="description" name="description"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Coordonnées -->
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <h3>
+                        <i class="fi fi-rs-phone-call"></i>
+                        {{ 'app.create_entreprise.section_coordinates'|trans }}
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="telephone">{{ 'app.create_entreprise.phone_main'|trans }}</label>
+                                <input type="tel" id="telephone" name="telephone" placeholder="+33 1 23 45 67 89">
+                            </div>
+                            <div class="form-group">
+                                <label for="telephone_secondaire">{{ 'app.create_entreprise.phone_secondary'|trans }}</label>
+                                <input type="tel" id="telephone_secondaire" name="telephone_secondaire">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email">{{ 'app.create_entreprise.email_main'|trans }}</label>
+                                <input type="email" id="email" name="email" placeholder="contact@entreprise.fr">
+                            </div>
+                            <div class="form-group">
+                                <label for="email_secondaire">{{ 'app.create_entreprise.email_secondary'|trans }}</label>
+                                <input type="email" id="email_secondaire" name="email_secondaire">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="site_web">{{ 'app.create_entreprise.website'|trans }}</label>
+                                <input type="url" id="site_web" name="site_web" placeholder="https://www.exemple.fr">
+                            </div>
+                            <div class="form-group">
+                                <label for="linkedin">{{ 'app.create_entreprise.linkedin'|trans }}</label>
+                                <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/company/...">
+                            </div>
+                        </div>
+
+                        <div class="form-group form-row full">
+                            <label for="adresse_siege">{{ 'app.create_entreprise.headquarters_address'|trans }}</label>
+                            <textarea id="adresse_siege" name="adresse_siege"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Représentant -->
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    <h3>
+                        <i class="fi fi-rs-user"></i>
+                        {{ 'app.create_entreprise.section_representative'|trans }}
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="prenom_representant">{{ 'app.create_entreprise.first_name'|trans }}</label>
+                                <input type="text" id="prenom_representant" name="prenom_representant">
+                            </div>
+                            <div class="form-group">
+                                <label for="nom_representant">{{ 'app.create_entreprise.last_name'|trans }}</label>
+                                <input type="text" id="nom_representant" name="nom_representant">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="poste_representant">{{ 'app.create_entreprise.position'|trans }}</label>
+                                <input type="text" id="poste_representant" name="poste_representant" placeholder="{{ 'app.create_entreprise.position'|trans }}">
+                            </div>
+                            <div class="form-group">
+                                <label for="telephone_representant">{{ 'app.create_entreprise.phone_main'|trans }}</label>
+                                <input type="tel" id="telephone_representant" name="telephone_representant">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="email_representant">{{ 'app.auth.email'|trans }}</label>
+                                <input type="email" id="email_representant" name="email_representant">
+                            </div>
+                            <div class="form-group">
+                                <label for="date_prise_fonction">{{ 'app.create_entreprise.start_date'|trans }}</label>
+                                <input type="date" id="date_prise_fonction" name="date_prise_fonction">
+                            </div>
+                        </div>
+
+                        <div class="form-group form-row full">
+                            <label for="notes_representant">{{ 'app.create_entreprise.notes'|trans }}</label>
+                            <textarea id="notes_representant" name="notes_representant"></textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn-cancel" onclick="window.history.back()">
+                <i class="fi fi-rs-cross"></i>
+                {{ 'app.common.cancel'|trans }}
+            </button>
+            <button type="submit" class="btn-save">
+                <i class="fi fi-rs-check"></i>
+                {{ 'app.create_entreprise.title'|trans }}
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

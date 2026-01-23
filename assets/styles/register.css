@@ -1,0 +1,108 @@
+.register-container {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2vw;
+}
+
+.register-card {
+    background: white;
+    border-radius: 0.75rem;
+    box-shadow: 0 0.625rem 2.5rem rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 28.125rem;
+    padding: 3.125rem 2.5rem;
+}
+
+.register-card h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #333;
+    text-align: center;
+    margin-bottom: 0.625rem;
+}
+
+.register-card .subtitle {
+    text-align: center;
+    color: #999;
+    font-size: 0.875rem;
+    margin-bottom: 1.875rem;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: #555;
+    font-size: 0.875rem;
+}
+
+.form-group input[type="email"],
+.form-group input[type="text"],
+.form-group input[type="password"] {
+    width: 100%;
+    padding: 0.75rem 0.9375rem;
+    border: 0.0625rem solid #e0e0e0;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.1875rem rgba(102, 126, 234, 0.1);
+}
+
+.form-group .form-check {
+    display: flex;
+    align-items: center;
+    margin-top: 1.25rem;
+    margin-bottom: 1.5625rem;
+}
+
+.form-group .form-check input[type="checkbox"] {
+    margin-right: 0.5rem;
+    cursor: pointer;
+}
+
+.form-group .form-check label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 0.8125rem;
+}
+
+.register-card .btn {
+    width: 100%;
+    padding: 0.75rem;
+    background: black;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 0.625rem;
+}
+
+.form-errors {
+    background: #fee;
+    border: 0.0625rem solid #fcc;
+    color: #c33;
+    padding: 0.75rem 0.9375rem;
+    border-radius: 0.375rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.875rem;
+}
+
+.form-errors ul {
+    margin: 0;
+    padding-left: 1.25rem;
+}

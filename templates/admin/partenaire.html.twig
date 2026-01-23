@@ -1,0 +1,193 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'app.admin.partenaires'|trans }} - CITC{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/admin/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/admin/users.css') }}">
+    <style>
+        body > header,
+        body > footer {
+            display: none;
+        }
+        body > main {
+            padding: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="admin-container" data-controller="partenaires">
+    {% include 'admin/_sidebar.html.twig' %}
+
+    <main class="admin-content">
+        <div class="page-header">
+            <h1>{{ 'Gestion des Partenaires'|trans }}</h1>
+            <div class="header-actions">
+                <button class="btn btn-danger" data-action="click->partenaires#deleteSelected" data-partenaires-target="deleteBtn" disabled>
+                    {{ 'Supprimer la sélection'|trans }}
+                </button>
+                <button class="btn btn-primary" data-action="click->partenaires#openCreateModal">
+                    + {{ 'Ajouter un partenaire'|trans }}
+                </button>
+            </div>
+        </div>
+
+        <div class="users-table-container">
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th width="40">
+                            <input type="checkbox" data-action="change->partenaires#toggleAll" data-partenaires-target="checkAll">
+                        </th>
+                        <th>{{ 'Nom'|trans }}</th>
+                        <th>{{ 'Téléphone'|trans }}</th>
+                        <th>{{ 'Email'|trans }}</th>
+                        <th>{{ 'Ville'|trans }}</th>
+                        <th width="100">{{ 'Actions'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for partenaire in partenaires|default([]) %}
+                    <tr>
+                        <td>
+                            <input type="checkbox" class="partenaire-checkbox" value="{{ partenaire.id }}" 
+                                data-action="change->partenaires#updateDeleteBtn" 
+                                data-partenaires-target="checkbox">
+                        </td>
+                        <td>{{ partenaire.nom }}</td>
+                        <td>{{ partenaire.telephone ?? '-' }}</td>
+                        <td>{{ partenaire.email ?? '-' }}</td>
+                        <td>{{ partenaire.ville ?? '-' }}</td>
+                        <td>
+                            <button class="btn-icon" data-action="click->partenaires#openEditModal" 
+                                    data-partenaire-id="{{ partenaire.id }}"
+                                    data-partenaire-nom="{{ partenaire.nom }}"
+                                    data-partenaire-telephone="{{ partenaire.telephone ?? '' }}"
+                                    data-partenaire-email="{{ partenaire.email ?? '' }}"
+                                    data-partenaire-adresse="{{ partenaire.adresse ?? '' }}"
+                                    data-partenaire-ville="{{ partenaire.ville ?? '' }}"
+                                    data-partenaire-code-postal="{{ partenaire.codePostal ?? '' }}"
+                                    data-partenaire-site-web="{{ partenaire.siteWeb ?? '' }}"
+                                    data-partenaire-description="{{ partenaire.description ?? '' }}"
+                                    title="Modifier">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal -->
+    <div class="modal" data-partenaires-target="modal">
+        <div class="modal-overlay" data-action="click->partenaires#closeModal"></div>
+        <div class="modal-content modal-large modal-split">
+            <div class="modal-header">
+                <h2 data-partenaires-target="modalTitle">{{ 'Modifier le partenaire'|trans }}</h2>
+                <button class="modal-close" data-action="click->partenaires#closeModal">&times;</button>
+            </div>
+            <div class="modal-body-split">
+                <!-- Panneau gauche : Formulaire -->
+                <div class="modal-left">
+                    <form data-partenaires-target="form" data-action="submit->partenaires#submitForm">
+                        <input type="hidden" data-partenaires-target="partenaireId">
+                        
+                        <div class="form-group">
+                            <label>{{ 'app.common.name'|trans }} *</label>
+                            <input type="text" class="form-control" data-partenaires-target="nomInput" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>{{ 'app.common.telephone'|trans }}</label>
+                            <input type="tel" class="form-control" data-partenaires-target="telephoneInput">
+                        </div>
+
+                        <div class="form-group">
+                            <label>{{ 'app.common.email'|trans }}</label>
+                            <input type="email" class="form-control" data-partenaires-target="emailInput">
+                        </div>
+
+                        <div class="form-group">
+                            <label>{{ 'app.common.address'|trans }}</label>
+                            <input type="text" class="form-control" data-partenaires-target="adresseInput">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group" style="flex: 2;">
+                                <label>{{ 'app.common.city'|trans }}</label>
+                                <input type="text" class="form-control" data-partenaires-target="villeInput">
+                            </div>
+                            <div class="form-group" style="flex: 1;">
+                                <label>{{ 'app.common.postal_code'|trans }}</label>
+                                <input type="text" class="form-control" data-partenaires-target="codePostalInput">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>{{ 'app.common.website'|trans }}</label>
+                            <input type="url" class="form-control" data-partenaires-target="siteWebInput" placeholder="https://...">
+                        </div>
+
+                        <div class="form-group">
+                            <label>{{ 'app.common.description'|trans }}</label>
+                            <textarea class="form-control" data-partenaires-target="descriptionInput" rows="3"></textarea>
+                        </div>
+
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-action="click->partenaires#closeModal">{{ 'app.common.cancel'|trans }}</button>
+                            <button type="submit" class="btn btn-primary">{{ 'app.common.save'|trans }}</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <!-- Panneau droit : Utilisateurs -->
+                <div class="modal-right" data-partenaires-target="usersSection" style="display: none;">
+                    <div class="users-section-header">
+                        <div class="search-box">
+                            <input type="text" 
+                                class="form-control search-input" 
+                                placeholder="{{ 'app.common.search'|trans }}"
+                                data-partenaires-target="searchInput"
+                                data-action="input->partenaires#filterSearchUsers">
+                        </div>
+                        <div class="add-user-box">
+                            <button class="btn btn-primary btn-add-user" 
+                                    data-action="click->partenaires#toggleAddDropdown">
+                                + {{ 'app.common.add_user'|trans }}
+                            </button>
+                            <div class="dropdown-add-users" data-partenaires-target="addDropdown" style="display: none;">
+                                <div class="dropdown-header">
+                                    <input type="text" 
+                                        class="form-control search-input-small" 
+                                        placeholder="{{ 'app.common.search'|trans }}"
+                                        data-partenaires-target="addSearchInput"
+                                        data-action="input->partenaires#filterAddUsers">
+                                </div>
+                                <div class="dropdown-content" data-partenaires-target="addUsersList">
+                                    <!-- {{ 'Liste des utilisateurs à ajouter'|trans }} -->
+                                </div>
+                                <div class="dropdown-footer">
+                                    <button class="btn btn-primary btn-validate" 
+                                            data-action="click->partenaires#validateAddUsers">
+                                        {{ 'app.common.validate'|trans }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="users-list" data-partenaires-target="usersList">
+                        <div class="empty-state">{{ 'app.common.empty'|trans }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

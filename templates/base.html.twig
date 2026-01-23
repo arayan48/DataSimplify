@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Welcome!{% endblock %}</title>
-        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 128 128%22><text y=%221.2em%22 font-size=%2296%22>⚫️</text><text y=%221.3em%22 x=%220.2em%22 font-size=%2276%22 fill=%22%23fff%22>sf</text></svg>">
+        <link rel="icon" href="{{ asset('img/logo/Logo CITC_Couleur gris.png') }}">
         {% block stylesheets %}
         {% endblock %}
 
@@ -12,6 +12,68 @@
         {% endblock %}
     </head>
     <body>
-        {% block body %}{% endblock %}
+
+        <header>
+            <div class="header-logo">
+                <a href="{{ path('app_home') }}">
+                    <img src="{{ asset('img/logo/Logo CITC_Couleur gris.png') }}" alt="Logo">
+                </a>
+                <div class="language-selector">
+                    <a href="?_locale=fr" class="lang-btn {% if app.request.locale == 'fr' %}active{% endif %}">FR</a>
+                    <a href="?_locale=en" class="lang-btn {% if app.request.locale == 'en' %}active{% endif %}">EN</a>
+                </div>
+            </div>
+            
+            <nav>
+                <a href="{{ path('app_home') }}">{{ 'app.common.home'|trans }}</a>
+
+                {% if app.user and 'ROLE_ADMINISTRATEUR' in app.user.roles %}
+                <div class="dropdown" data-controller="dropdown">
+                    <span class="user-info dropdown-toggle no-background" data-action="click->dropdown#toggle" data-dropdown-target="toggle">
+                        {{ 'app.header.administrator'|trans }}
+                    </span>
+                    <div class="dropdown-menu" data-dropdown-target="menu">
+                        <a href="{{ path('app_admin_dashboard') }}" class="dropdown-item">{{ 'app.admin.dashboard'|trans }}</a>
+                        <a href="{{ path('app_admin_users') }}" class="dropdown-item">{{ 'app.admin.users'|trans }}</a>
+                        <a href="{{ path('app_admin_partenaire') }}" class="dropdown-item">{{ 'app.admin.partenaires'|trans }}</a>
+                    </div>
+                </div>
+                {% elseif app.user and 'ROLE_ADMINISTRATION' in app.user.roles %}
+                <div class="dropdown" data-controller="dropdown">
+                    <span class="user-info dropdown-toggle no-background" data-action="click->dropdown#toggle" data-dropdown-target="toggle">
+                        {{ 'app.header.administration'|trans }}
+                    </span>
+                    <div class="dropdown-menu" data-dropdown-target="menu">
+                        <a href="{{ path('app_administration_dashboard') }}" class="dropdown-item">{{ 'app.administration.dashboard'|trans }}</a>
+                        <a href="{{ path('app_administration_statistics') }}" class="dropdown-item">{{ 'app.administration.statistics'|trans }}</a>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if not app.user %}
+                    <a href="{{ path('app_login') }}" class="btn btn-primary">{{ 'app.common.login'|trans }}</a>
+                {% else %}
+                    <div class="dropdown" data-controller="dropdown">
+                        <span class="user-info dropdown-toggle" data-action="click->dropdown#toggle" data-dropdown-target="toggle">{{ 'app.header.hello'|trans }} {{ app.user.usernameIdentifier }}</span>
+                        <div class="dropdown-menu" data-dropdown-target="menu">
+                            <a href="{{ path('app_profile') }}" class="dropdown-item">{{ 'app.common.profile'|trans }}</a>
+                            <a href="{{ logout_path() }}" class="dropdown-item dropdown-item-logout">{{ 'app.common.logout'|trans }}</a>
+                        </div>
+                    </div>
+                {% endif %}
+            </nav>
+        </header>
+
+        <div id="global-loader" class="loader-overlay" style="display: none;">
+            <div class="loader-spinner"></div>
+        </div>
+
+        <main>
+            {% block body %}{% endblock %}
+        </main>
+
+        <footer>
+            <p>{{ 'app.footer.copyright'|trans }}</p>
+        </footer>
     </body>
 </html>

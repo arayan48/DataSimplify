@@ -1,0 +1,204 @@
+app:
+  common:
+    welcome: Bienvenue
+    home: Accueil
+    login: Connexion
+    logout: Déconnexion
+    profile: Profil
+    cancel: Annuler
+    back: Retour
+    create: Créer
+    edit: Modifier
+    delete: Supprimer
+    save: Enregistrer
+    submit: Soumettre
+    search: Rechercher
+    date_time: Date/Heure
+    user: Utilisateur
+    action: Action
+    status: Statut
+    name: Nom
+    phone: Téléphone
+    email: Email
+    city: Ville
+    actions: Actions
+    delete_selection: Supprimer la sélection
+    add_partner: Ajouter un partenaire
+    add_user: Ajouter un utilisateur
+    reset: Réinitialiser
+    first_name: Prénom
+    last_name: Nom
+    username: Nom d'utilisateur
+    search_placeholder: Rechercher...
+    empty: Aucun utilisateur
+    validate: Valider
+    telephone: Téléphone
+    address: Adresse
+    postal_code: Code postal
+    website: Site web
+    description: Description
+    all_roles: Tous les rôles
+    role: Rôle
+    partner: Partenaire
+    all_partners: Tous les partenaires
+    no_partner: Sans partenaire
+    administrator: Administrateur
+    administration: Administration
+    user_role: Utilisateur
+    edit_user: Détails de l'utilisateur
+    password_help: Laissez vide pour ne pas modifier
+    password: Mot de passe
+    password_confirm: Confirmation du mot de passe
+    generate: Générer
+    close: Fermer
+    empty_state: Aucun utilisateur
+    password_mismatch: Les mots de passe ne correspondent pas
+    
+  header:
+    administrator: Administrateur
+    administration: Administration
+    hello: Bonjour
+    copyright: © 2026 CITC. Tous droits réservés.
+
+  admin:
+    dashboard: Dashboard
+    dashboard_title: Dashboard Admin
+    users: Utilisateurs
+    partenaires: Partenaires
+    quit: Quitter
+    total_users: Utilisateurs Total
+    active_users: Utilisateurs Actifs
+    processed_files: Fichiers Traités
+    conversion_rate: Taux de Conversion
+    logs: Logs
+    recent_activity: Activité Récente
+    edit: Modifier
+    delete: Supprimer
+    management: Gestion des Partenaires
+    success: Succès
+    error: Erreur
+    in_progress: En cours
+    
+  administration:
+    dashboard: Dashboard
+    dashboard_title: Dashboard Administration
+    statistics: Statistiques
+    create_company: Création d'entreprise
+    work_package: Work Package
+    year: Année
+    partners: Partenaires
+    no_company: Aucune entreprise disponible
+    company: Entreprise
+    search_placeholder: Rechercher...
+
+  create_entreprise:
+    title: Création d'entreprise
+    description: Remplissez les informations de votre entreprise en suivant les étapes
+    
+    section_info: Information Entreprise
+    section_coordinates: Coordonnées
+    section_representative: Représentant
+    
+    sections_completed: "sections complétées"
+    
+    # Section 1
+    company_name: Company Name
+    siret: SIRET
+    activity_sector: Activity Sector
+    city: City
+    postal_code: Postal Code
+    country: Country
+    france: France
+    address: Address
+    company_description: Description
+    
+    # Section 2
+    phone_main: Main Phone
+    phone_secondary: Secondary Phone
+    email_main: Main Email
+    email_secondary: Secondary Email
+    website: Website
+    linkedin: LinkedIn
+    headquarters_address: Headquarters Address
+    
+    # Section 3
+    first_name: First Name
+    last_name: Last Name
+    position: Position/Role
+    start_date: Start Date
+    notes: Notes
+    
+    required: "* Required field"
+
+  login:
+    title: CITC - Connexion
+    please_login: Veuillez vous connecter
+    email: Email
+    password: Mot de passe
+    remember_me: Se souvenir de moi
+    submit: Se connecter
+
+  register:
+    title: Créer un compte
+    subtitle: Rejoignez-nous dès maintenant
+    email: Email
+    username: Nom d'utilisateur
+    firstname: Prénom
+    lastname: Nom
+    password: Mot de passe
+    agree_terms: J'accepte les conditions
+    submit: S'inscrire
+
+  home:
+    title: Accueil
+    welcome: Bienvenue sur CITC
+    
+  profile:
+    title: Profil
+    email: Email
+    username: Nom d'utilisateur
+    firstname: Prénom
+    lastname: Nom
+    
+    # Section 1
+    company_name: Nom de l'entreprise
+    siret: SIRET
+    activity_sector: Secteur d'activité
+    city: Ville
+    postal_code: Code postal
+    country: Pays
+    france: France
+    address: Adresse
+    description: Description
+    
+    # Section 2
+    phone_main: Téléphone principal
+    phone_secondary: Téléphone secondaire
+    email_main: Email principal
+    email_secondary: Email secondaire
+    website: Site web
+    linkedin: LinkedIn
+    headquarters_address: Adresse du siège social
+    
+    # Section 3
+    first_name: Prénom
+    last_name: Nom
+    position: Poste/Fonction
+    start_date: Date de prise de fonction
+    notes: Notes
+    
+    required: "* Champ obligatoire"
+
+  auth:
+    login: Connexion
+    register: Inscription
+    email: Email
+    password: Mot de passe
+    password_confirm: Confirmer le mot de passe
+    remember_me: Se souvenir de moi
+    forgot_password: Mot de passe oublié
+    no_account: Pas encore de compte
+    already_account: Vous avez déjà un compte
+
+  footer:
+    copyright: "© 2026 CITC. Tous droits réservés."

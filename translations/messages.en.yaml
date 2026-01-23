@@ -1,0 +1,173 @@
+app:
+  common:
+    welcome: Welcome
+    home: Home
+    login: Login
+    logout: Logout
+    profile: Profile
+    cancel: Cancel
+    back: Back
+    create: Create
+    edit: Edit
+    delete: Delete
+    save: Save
+    submit: Submit
+    search: Search
+    date_time: Date/Time
+    user: User
+    action: Action
+    status: Status
+    name: Name
+    phone: Phone
+    email: Email
+    city: City
+    actions: Actions
+    delete_selection: Delete Selection
+    add_partner: Add a Partner
+    add_user: Add a User
+    reset: Reset
+    first_name: First Name
+    last_name: Last Name
+    username: Username
+    search_placeholder: Search...
+    empty: No users
+    validate: Validate
+    telephone: Phone
+    address: Address
+    postal_code: Postal Code
+    website: Website
+    description: Description
+    all_roles: All Roles
+    role: Role
+    partner: Partner
+    all_partners: All Partners
+    no_partner: No Partner
+    administrator: Administrator
+    administration: Administration
+    user_role: User
+    edit_user: User Details
+    password_help: Leave empty to not modify
+    password: Password
+    password_confirm: Confirm Password
+    generate: Generate
+    close: Close
+    empty_state: No users
+    password_mismatch: Passwords do not match
+    
+  header:
+    administrator: Administrator
+    administration: Administration
+    hello: Hello
+    copyright: © 2026 CITC. All rights reserved.
+
+  admin:
+    dashboard: Dashboard
+    dashboard_title: Admin Dashboard
+    users: Users
+    partenaires: Partners
+    quit: Quit
+    total_users: Total Users
+    active_users: Active Users
+    processed_files: Processed Files
+    conversion_rate: Conversion Rate
+    logs: Logs
+    recent_activity: Recent Activity
+    edit: Edit
+    delete: Delete
+    management: Partners Management
+    success: Success
+    error: Error
+    in_progress: In Progress
+    
+  administration:
+    dashboard: Dashboard
+    dashboard_title: Administration Dashboard
+    statistics: Statistics
+    create_company: Company Creation
+    work_package: Work Package
+    year: Year
+    partners: Partners
+    no_company: No companies available
+    company: Company
+    search_placeholder: Search...
+
+  create_entreprise:
+    title: Company Creation
+    description: Fill in your company information by following the steps
+    
+    section_info: Company Information
+    section_coordinates: Coordinates
+    section_representative: Representative
+    
+    sections_completed: "sections completed"
+    
+    # Section 1
+    company_name: Company Name
+    siret: SIRET
+    activity_sector: Activity Sector
+    city: City
+    postal_code: Postal Code
+    country: Country
+    france: France
+    address: Address
+    company_description: Description
+    
+    # Section 2
+    phone_main: Main Phone
+    phone_secondary: Secondary Phone
+    email_main: Main Email
+    email_secondary: Secondary Email
+    website: Website
+    linkedin: LinkedIn
+    headquarters_address: Headquarters Address
+    
+    # Section 3
+    first_name: First Name
+    last_name: Last Name
+    position: Position/Role
+    start_date: Start Date
+    notes: Notes
+    
+    required: "* Required field"
+
+  login:
+    title: CITC - Login
+    please_login: Please log in
+    email: Email
+    password: Password
+    remember_me: Remember Me
+    submit: Sign In
+
+  register:
+    title: Create an Account
+    subtitle: Join us now
+    email: Email
+    username: Username
+    firstname: First Name
+    lastname: Last Name
+    password: Password
+    agree_terms: I agree to the terms
+    submit: Sign Up
+
+  home:
+    title: Home
+    welcome: Welcome to CITC
+    
+  profile:
+    title: Profile
+    email: Email
+    username: Username
+    firstname: First Name
+    lastname: Last Name
+
+  auth:
+    login: Login
+    register: Register
+    password_confirm: Confirm Password
+    remember_me: Remember Me
+    forgot_password: Forgot Password
+    no_account: Don't have an account yet
+    already_account: Already have an account
+
+  footer:
+    copyright: "© 2026 CITC. All rights reserved."

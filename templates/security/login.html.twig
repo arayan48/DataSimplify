@@ -1,0 +1,96 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'app.login.title'|trans }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('../assets/styles/login.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="login-container">
+        <div class="login-card">
+            <form method="post">
+                <h1 class="h3 mb-3 font-weight-normal">{{ 'app.login.please_login'|trans }}</h1>
+                {% if error %}
+                    <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                {% endif %}
+                <label for="username">{{ 'app.login.email'|trans }}</label>
+                <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
+                <label for="password">{{ 'app.login.password'|trans }}</label>
+                <div class="password-field">
+                    <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
+                    <button type="button" class="toggle-password" id="togglePassword" style="display: none;">
+                        <svg class="eye-icon eye-open-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <svg class="eye-icon eye-closed-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                        </svg>
+                    </button>
+                </div>
+                <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+                <div class="checkbox mb-3">
+                    <input type="checkbox" name="_remember_me" id="_remember_me">
+                    <label for="_remember_me">{{ 'app.login.remember_me'|trans }}</label>
+                </div>
+                {#
+                    Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
+                    See https://symfony.com/doc/current/security/remember_me.html
+
+                    <div class="checkbox mb-3">
+                        <input type="checkbox" name="_remember_me" id="_remember_me">
+                        <label for="_remember_me">Remember me</label>
+                    </div>
+                #}
+
+                <button class="btn btn-lg btn-primary" type="submit">
+                    {{ 'app.login.submit'|trans }}
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = document.getElementById('togglePassword');
+            const eyeOpenIcon = toggleButton.querySelector('.eye-open-icon');
+            const eyeClosedIcon = toggleButton.querySelector('.eye-closed-icon');
+
+            passwordInput.addEventListener('focus', function() {
+                toggleButton.style.display = 'flex';
+            });
+
+            passwordInput.addEventListener('blur', function() {
+                if (!passwordInput.value) {
+                    toggleButton.style.display = 'none';
+                }
+            });
+
+            passwordInput.addEventListener('input', function() {
+                if (passwordInput.value) {
+                    toggleButton.style.display = 'flex';
+                } else {
+                    toggleButton.style.display = 'none';
+                }
+            });
+
+            toggleButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+
+                if (type === 'text') {
+                    eyeOpenIcon.style.display = 'none';
+                    eyeClosedIcon.style.display = 'block';
+                } else {
+                    eyeOpenIcon.style.display = 'block';
+                    eyeClosedIcon.style.display = 'none';
+                }
+            });
+        });
+    </script>
+{% endblock %}

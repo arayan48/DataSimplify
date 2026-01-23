@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Dashboard - CITC{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/admin/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/admin/dashboard.css') }}">
+    <style>
+        body > header,
+        body > footer {
+            display: none;
+        }
+        body > main {
+            padding: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+<div class="dashboard-container" data-controller="dashboard">
+    <!-- Sidebar -->
+    {% include 'admin/_sidebar.html.twig' %}
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Topbar -->
+        <div class="topbar">
+            <h1>{{ 'app.admin.dashboard'|trans }}</h1>
+            <div class="topbar-actions">
+                <div class="user-info">
+                    <div class="user-avatar">{{ app.user ? app.user.email|first|upper : 'A' }}</div>
+                    <span>{{ app.user ? app.user.email : 'Administrateur' }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">{{ 'app.admin.total_users'|trans }}</span>
+                    <span class="stat-card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="9" cy="7" r="4"></circle>
+                            <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                        </svg>
+                    </span>
+                </div>
+                <div class="stat-card-value">{{ totalUsers ?? '-' }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">{{ 'app.admin.active_users'|trans }}</span>
+                    <span class="stat-card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                        </svg>
+                    </span>
+                </div>
+                <div class="stat-card-value">{{ activeUsers ?? '-' }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">{{ 'app.admin.processed_files'|trans }}</span>
+                    <span class="stat-card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </span>
+                </div>
+                <div class="stat-card-value">{{ filesProcessed ?? '-' }}</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-card-header">
+                    <span class="stat-card-title">{{ 'app.admin.conversion_rate'|trans }}</span>
+                    <span class="stat-card-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="20" x2="12" y2="10"></line>
+                            <line x1="18" y1="20" x2="18" y2="4"></line>
+                            <line x1="6" y1="20" x2="6" y2="16"></line>
+                        </svg>
+                    </span>
+                </div>
+                <div class="stat-card-value">{{ conversionRate ?? '-' }}</div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Logs Table -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ 'app.admin.logs'|trans }}</h3>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>{{ 'Date/Heure'|trans }}</th>
+                                <th>{{ 'Utilisateur'|trans }}</th>
+                                <th>{{ 'Action'|trans }}</th>
+                                <th>{{ 'Statut'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in logs|default([]) %}
+                            <tr>
+                                <td>{{ log.timestamp|date('d/m/Y H:i') }}</td>
+                                <td>{{ log.user }}</td>
+                                <td>{{ log.action }}</td>
+                                <td>
+                                    {% if log.status == 'success' %}
+                                        <span class="badge success">{{ 'Succès'|trans }}</span>
+                                    {% elseif log.status == 'error' %}
+                                        <span class="badge danger">{{ 'Erreur'|trans }}</span>
+                                    {% else %}
+                                        <span class="badge warning">{{ 'En cours'|trans }}</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Activity Feed -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">{{ 'app.admin.recent_activity'|trans }}</h3>
+                </div>
+                <ul class="activity-list">
+                    {% for activity in recentActivities|default([]) %}
+                    <li class="activity-item">
+                        <div class="activity-title">{{ activity.title }}</div>
+                        <div class="activity-time">{{ activity.time }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

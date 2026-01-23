@@ -1,0 +1,35 @@
+[
+    {
+        "id": "1",
+        "nom": "Partenaire A",
+        "telephone": "1584654851",
+        "email": "dqsdqd@dqsd.com",
+        "adresse": "52 rue sqsq",
+        "ville": "LIlle",
+        "codePostal": "59000",
+        "siteWeb": "",
+        "description": ""
+    },
+    {
+        "id": "2",
+        "nom": "Partenaire B",
+        "telephone": "",
+        "email": "",
+        "adresse": "",
+        "ville": "",
+        "codePostal": "",
+        "siteWeb": "",
+        "description": ""
+    },
+    {
+        "id": "3",
+        "nom": "Partenaire C",
+        "telephone": "",
+        "email": "",
+        "adresse": "",
+        "ville": "",
+        "codePostal": "",
+        "siteWeb": "",
+        "description": ""
+    }
+]

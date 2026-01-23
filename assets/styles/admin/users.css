@@ -1,0 +1,633 @@
+.admin-container {
+    display: flex;
+    min-height: 100vh;
+}
+
+.admin-content {
+    flex: 1;
+    margin-left: 220px;
+    padding: 2rem;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.page-header h1 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.header-actions {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1d4ed8;
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #b91c1c;
+}
+
+.btn-danger:disabled {
+    background: #e5e7eb;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    padding: 0.25rem;
+}
+
+.btn-icon:hover {
+    opacity: 0.7;
+}
+
+/* Table */
+.users-table-container {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table thead {
+    background: #f8f8f8;
+}
+
+.users-table th {
+    text-align: left;
+    padding: 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #666;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.users-table td {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    color: #333;
+}
+
+.users-table tbody tr:hover {
+    background: #f8f8f8;
+}
+
+.users-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.3rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 4px;
+}
+
+.badge-default {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.badge-success {
+    background: #ecfdf5;
+    color: #059669;
+}
+
+.badge-warning {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+/* Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+}
+
+.modal.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    pointer-events: auto;
+}
+
+.modal-content {
+    position: relative;
+    background: white;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 1001;
+    pointer-events: auto;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.modal-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: #666;
+    padding: 0;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+}
+
+/* Detail Modal */
+.detail-modal .modal-content {
+    max-width: 700px;
+}
+
+.user-detail-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.user-detail-item {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 6px;
+}
+
+.user-detail-item label {
+    display: block;
+    font-weight: 600;
+    color: #666;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+}
+
+.user-detail-item .value {
+    font-size: 1rem;
+    color: #333;
+}
+
+.detail-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+}
+
+.btn-icon-text {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-icon-text svg {
+    width: 18px;
+    height: 18px;
+}
+
+.btn-delete {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #b91c1c;
+}
+
+.btn-close-detail {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-close-detail:hover {
+    background: #4b5563;
+}
+
+.btn-edit {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #1d4ed8;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.625rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.checkbox-group label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: normal;
+}
+
+small {
+    display: block;
+    margin-top: 0.25rem;
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.loading, .empty-state, .error-state {
+    padding: 2rem;
+    text-align: center;
+    color: #666;
+    font-size: 0.875rem;
+}
+
+.empty-state {
+    color: #9ca3af;
+}
+
+.error-state {
+    color: #dc2626;
+}
+
+/* Modal Split Layout */
+.modal-large {
+    max-width: 1000px;
+}
+
+.modal-split {
+    max-height: 90vh;
+}
+
+.modal-split .modal-body-split {
+    display: flex;
+    gap: 0;
+    padding: 0;
+    height: 70vh;
+    max-height: 70vh;
+    overflow: hidden;
+}
+
+.modal-split .modal-left {
+    flex: 0 0 50%;
+    padding: 1.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border-right: 1px solid #e0e0e0;
+}
+
+.modal-split .modal-right {
+    flex: 0 0 50%;
+    background: #f9fafb;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.users-section-header {
+    padding: 1rem;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.search-box, .add-user-box {
+    position: relative;
+}
+
+.search-input {
+    background: white;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.btn-add-user {
+    width: 100%;
+    text-transform: uppercase;
+    font-size: 0.875rem;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+}
+
+.dropdown-add-users {
+    position: fixed;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    z-index: 9999;
+    max-height: 400px;
+    width: auto;
+    min-width: 350px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.dropdown-header {
+    padding: 0.75rem;
+    border-bottom: 1px solid #e0e0e0;
+    flex-shrink: 0;
+}
+
+.search-input-small {
+    font-size: 0.813rem;
+}
+
+.dropdown-content {
+    padding: 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+    max-height: 250px;
+}
+
+.dropdown-footer {
+    padding: 0.75rem;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.btn-validate {
+    padding: 0.625rem 1.5rem;
+    font-size: 0.875rem;
+}
+
+.user-checkbox-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.user-checkbox-item:hover {
+    background: #f3f4f6;
+}
+
+.user-checkbox-item input[type="checkbox"] {
+    margin-top: 0.25rem;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.user-checkbox-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-checkbox-info strong {
+    font-size: 0.875rem;
+    color: #333;
+}
+
+.user-checkbox-info small {
+    font-size: 0.75rem;
+    color: #666;
+}
+
+.users-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.user-card {
+    background: #9ca3af;
+    color: white;
+    border-radius: 6px;
+    padding: 1rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.user-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.user-card-content strong {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: white;
+}
+
+.user-card-content small {
+    font-size: 0.9rem;
+    color: white;
+}
+
+.btn-remove {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.2s;
+}
+
+.btn-remove svg {
+    width: 16px;
+    height: 16px;
+}
+
+.btn-remove:hover {
+    background: white;
+    color: #9ca3af;
+}
+
+.btn-remove:hover svg {
+    stroke: #9ca3af;
+}
+
+@media (max-width: 768px) {
+    .admin-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .header-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .users-table {
+        font-size: 0.8rem;
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 0.5rem;
+    }
+}
