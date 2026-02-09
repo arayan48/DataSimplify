@@ -60,8 +60,8 @@
     <!-- Footer Sidebar -->
     <div class="sidebar-footer">
         <div class="sidebar-footer-lang">
-            <a href="?_locale=fr" class="lang-btn-sidebar {% if app.request.locale == 'fr' %}active{% endif %}">FR</a>
-            <a href="?_locale=en" class="lang-btn-sidebar {% if app.request.locale == 'en' %}active{% endif %}">EN</a>
+            <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'fr'})) }}" class="lang-btn-sidebar {% if app.request.locale == 'fr' %}active{% endif %}">FR</a>
+            <a href="{{ path(app.request.attributes.get('_route'), app.request.attributes.get('_route_params')|merge({'_locale': 'en'})) }}" class="lang-btn-sidebar {% if app.request.locale == 'en' %}active{% endif %}">EN</a>
         </div>
         <div class="sidebar-footer-copyright">
             <p>&copy; 2026 CITC</p>

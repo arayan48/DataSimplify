@@ -41,9 +41,21 @@ security:
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        - { path: ^/administrateur, roles: ROLE_ADMINISTRATEUR } 
-        - { path: ^/profile, roles: ROLE_USER }
-        - { path: ^/administration, roles: ROLE_ADMINISTRATION }
+        # Allow access to login and logout pages
+        - { path: '^/[a-z]{2}/connexion', roles: PUBLIC_ACCESS }
+        - { path: '^/[a-z]{2}/login', roles: PUBLIC_ACCESS }
+        - { path: '^/[a-z]{2}/deconnexion', roles: PUBLIC_ACCESS }
+        - { path: '^/[a-z]{2}/logout', roles: PUBLIC_ACCESS }
+        # Block registration page completely
+        - { path: '^/[a-z]{2}/inscription', roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        - { path: '^/[a-z]{2}/register', roles: IS_AUTHENTICATED_ANONYMOUSLY }
+        # Restrict administration pages (must be before administrateur to match first)
+        - { path: '^/[a-z]{2}/administration', roles: ROLE_ADMINISTRATION }
+        # Restrict admin pages
+        - { path: '^/[a-z]{2}/administrateur', roles: ROLE_ADMINISTRATEUR }
+        - { path: '^/[a-z]{2}/administrator', roles: ROLE_ADMINISTRATEUR }
+        # Require authentication for all other pages
+        - { path: '^/', roles: ROLE_USER }
 
 when@test:
     security:

@@ -53,6 +53,29 @@ app:
     close: Close
     empty_state: No users
     password_mismatch: Passwords do not match
+    users_management: Users Management
+    partners_management: Partners Management
+    edit_partner: Edit Partner
+    modify: Edit
+
+  js:
+    users:
+      add_user: Add a User
+      edit_user: Edit User
+      password_required: Password is required to create a user
+      confirm_delete_multiple: "Are you sure you want to delete {count} user(s)?"
+      confirm_delete_single: 'Are you sure you want to delete user "{name}"?'
+      success: Success
+      error: An error occurred
+      password_generated: Password generated successfully
+    partners:
+      add_partner: Add a Partner
+      edit_partner: Edit Partner
+      confirm_delete: "Are you sure you want to delete {count} partner(s)?"
+      error: An error occurred
+      select_user: Please select at least one user
+      users_added: "{count} user(s) added"
+      user_removed: User removed from partner
     
   header:
     administrator: Administrator
@@ -90,43 +113,112 @@ app:
     no_company: No companies available
     company: Company
     search_placeholder: Search...
-
+    company_name: Company Name
+    category: Category
+    city: City
+    country: Country
+    details: Details
+    no_data: No data available
+    reset_filters: Reset filters
   create_entreprise:
     title: Company Creation
     description: Fill in your company information by following the steps
     
     section_info: Company Information
-    section_coordinates: Coordinates
-    section_representative: Representative
+    section_selection: Category Selection
+    selection_description: Check the categories for which you want to fill in information
+    
+    # Categories
+    event: Event
+    formation: Training
+    relation: Partnership
+    
+    cat_wp2: Digital diagnosis and maturity
+    cat_wp5_event: Events and workshops
+    cat_wp5_formation: Training and support
+    cat_wp6: Services and projects
+    cat_wp7: Financing and investment
+    cat_relation: Partner networking
     
     sections_completed: "sections completed"
     
     # Section 1
+    owner: Owner
+    select_owner: Select an owner
+    assign_partner: Assign to partner
+    use_my_partner: Use my partner
     company_name: Company Name
+    edih_year: EDIH Year
+    structure_type: Structure Type
+    select_structure: Select structure type
+    creation_year: Creation Year
+    activity_sector: Sector
     siret: SIRET
-    activity_sector: Activity Sector
-    city: City
+    company_size: Size
+    select_size: Select size
+    employees: employees
+    turnover: Turnover
     postal_code: Postal Code
+    city: City
+    region: Region
     country: Country
+    search_country: Search for a country...
     france: France
     address: Address
     company_description: Description
+    other: Other
     
-    # Section 2
-    phone_main: Main Phone
-    phone_secondary: Secondary Phone
-    email_main: Main Email
-    email_secondary: Secondary Email
-    website: Website
-    linkedin: LinkedIn
-    headquarters_address: Headquarters Address
+    # WP2
+    wp2_score_dmao: DMAO Score
+    wp2_digital_strategy: Digital Business Strategy
+    wp2_digital_readiness: Digital Readiness
+    wp2_human_centric: Human Centric Digitalisation
+    wp2_data_governance: Data Governance
+    wp2_ai: Automation & Artificial Intelligence
+    wp2_green: Green Digitalisation
+    wp2_score_dma1: DMA1 Score
     
-    # Section 3
-    first_name: First Name
-    last_name: Last Name
-    position: Position/Role
-    start_date: Start Date
-    notes: Notes
+    # WP5 Event
+    wp5_year: Year
+    wp5_event_passage: Selection committee passage
+    wp5_responsible: WP5 Responsible
+    wp5_responsible_wp4: WP4 Responsible
+    wp5_need: WP5 Need
+    wp5_action: WP5 Action
+    
+    # WP5 Formation
+    wp5_technology: Technology used
+    wp5_service_price: Service Price WP6
+    wp5_price_invoiced: Price invoiced WP6
+    wp5_start_date: Starting date WP6
+    wp5_finish_date: Finishing date WP6
+    
+    # WP6
+    wp6_responsible: WP6 Responsible
+    wp6_technology: Technology used
+    wp6_service_price: Service Price WP6
+    wp6_price_invoiced: Price invoiced WP6
+    wp6_start_date: Starting date WP6
+    wp6_finish_date: Finishing date WP6
+    
+    # WP7
+    wp7_responsible: WP7 Responsible
+    wp7_amount_trigger: Amount trigger
+    wp7_type_investment: Investment type
+    wp7_source_financing: Financing source
+    wp7_amount_obtained: Amount obtained
+    wp7_service_price: Service price WP7
+    wp7_price_invoiced: Price invoiced wp7
+    wp7_start_date: Starting date wp7
+    wp7_finish_date: Finishing date wp7
+    
+    # Relation
+    relation_responsible: WP6 Responsible
+    relation_technology: Technology used
+    relation_service_price: Service Price WP6
+    relation_price_invoiced: Price invoiced WP6
+    relation_start_date: Starting date WP6
+    relation_finish_date: Finishing date WP6
     
     required: "* Required field"
 

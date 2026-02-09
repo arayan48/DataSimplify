@@ -53,6 +53,29 @@ app:
     close: Fermer
     empty_state: Aucun utilisateur
     password_mismatch: Les mots de passe ne correspondent pas
+    users_management: Gestion des Utilisateurs
+    partners_management: Gestion des Partenaires
+    edit_partner: Modifier le partenaire
+    modify: Modifier
+
+  js:
+    users:
+      add_user: Ajouter un utilisateur
+      edit_user: Modifier l'utilisateur
+      password_required: Le mot de passe est requis pour créer un utilisateur
+      confirm_delete_multiple: "Êtes-vous sûr de vouloir supprimer {count} utilisateur(s) ?"
+      confirm_delete_single: "Êtes-vous sûr de vouloir supprimer l'utilisateur \"{name}\" ?"
+      success: Succès
+      error: Une erreur est survenue
+      password_generated: Mot de passe généré avec succès
+    partners:
+      add_partner: Ajouter un partenaire
+      edit_partner: Modifier le partenaire
+      confirm_delete: "Êtes-vous sûr de vouloir supprimer {count} partenaire(s) ?"
+      error: Une erreur est survenue
+      select_user: Veuillez sélectionner au moins un utilisateur
+      users_added: "{count} utilisateur(s) ajouté(s)"
+      user_removed: Utilisateur retiré du partenaire
     
   header:
     administrator: Administrateur
@@ -90,45 +113,115 @@ app:
     no_company: Aucune entreprise disponible
     company: Entreprise
     search_placeholder: Rechercher...
+    company_name: Nom de l'entreprise
+    category: Catégorie
+    city: Ville
+    country: Pays
+    details: Détails
+    no_data: Aucune donnée disponible
+    reset_filters: Réinitialiser les filtres
 
   create_entreprise:
     title: Création d'entreprise
     description: Remplissez les informations de votre entreprise en suivant les étapes
     
     section_info: Information Entreprise
-    section_coordinates: Coordonnées
-    section_representative: Représentant
+    section_selection: Sélection des catégories
+    selection_description: Cochez les catégories pour lesquelles vous souhaitez remplir les informations
+    
+    # Categories
+    event: Événement
+    formation: Formation
+    relation: Mise en relation
+    
+    cat_wp2: Diagnostic et maturité numérique
+    cat_wp5_event: Événements et ateliers
+    cat_wp5_formation: Formations et accompagnement
+    cat_wp6: Services et projets
+    cat_wp7: Financement et investissement
+    cat_relation: Mise en relation partenaires
     
     sections_completed: "sections complétées"
     
     # Section 1
-    company_name: Company Name
-    siret: SIRET
-    activity_sector: Activity Sector
-    city: City
-    postal_code: Postal Code
-    country: Country
+    owner: Propriétaire
+    select_owner: Sélectionner un propriétaire
+    assign_partner: Attribuer à un partenaire
+    use_my_partner: Utiliser mon partenaire
+    company_name: Nom de l'entreprise
+    edih_year: Année EDIH
+    structure_type: Type de structure
+    select_structure: Sélectionner le type de structure
+    creation_year: Année de création
+    activity_sector: Secteur
+    siret: Siret
+    company_size: Taille
+    select_size: Sélectionner la taille
+    employees: salariés
+    turnover: CA
+    postal_code: Code Postal
+    city: Ville
+    region: Région
+    country: Pays
+    search_country: Rechercher un pays...
     france: France
-    address: Address
+    address: Adresse
     company_description: Description
+    other: Autre
     
-    # Section 2
-    phone_main: Main Phone
-    phone_secondary: Secondary Phone
-    email_main: Main Email
-    email_secondary: Secondary Email
-    website: Website
-    linkedin: LinkedIn
-    headquarters_address: Headquarters Address
+    # WP2
+    wp2_score_dmao: Score DMAO
+    wp2_digital_strategy: Digital Business Strategy
+    wp2_digital_readiness: Digital Readiness
+    wp2_human_centric: Human Centric Digitalisation
+    wp2_data_governance: Data Governance
+    wp2_ai: Automation & Artificial Intelligence
+    wp2_green: Green Digitalisation
+    wp2_score_dma1: Score DMA1
     
-    # Section 3
-    first_name: First Name
-    last_name: Last Name
-    position: Position/Role
-    start_date: Start Date
-    notes: Notes
+    # WP5 Event
+    wp5_year: Année
+    wp5_event_passage: Passage comité sélection
+    wp5_responsible: Responsable WP5
+    wp5_responsible_wp4: Responsable WP4
+    wp5_need: Besoin WP5
+    wp5_action: Action WP5
     
-    required: "* Required field"
+    # WP5 Formation
+    wp5_technology: Technology used
+    wp5_service_price: Service Price WP6
+    wp5_price_invoiced: Price invoiced WP6
+    wp5_start_date: Starting date WP6
+    wp5_finish_date: Finishing date WP6
+    
+    # WP6
+    wp6_responsible: Responsable WP6
+    wp6_technology: Technology used
+    wp6_service_price: Service Price WP6
+    wp6_price_invoiced: Price invoiced WP6
+    wp6_start_date: Starting date WP6
+    wp6_finish_date: Finishing date WP6
+    
+    # WP7
+    wp7_responsible: Responsable WP7
+    wp7_amount_trigger: Amount trigger
+    wp7_type_investment: Type investissement
+    wp7_source_financing: Source financement
+    wp7_amount_obtained: Montant obtenu
+    wp7_service_price: Service price WP7
+    wp7_price_invoiced: price invoiced wp7
+    wp7_start_date: Starting date wp7
+    wp7_finish_date: Finishing date wp7
+    
+    # Relation
+    relation_responsible: Responsable WP6
+    relation_technology: Technology used
+    relation_service_price: Service Price WP6
+    relation_price_invoiced: Price invoiced WP6
+    relation_start_date: Starting date WP6
+    relation_finish_date: Finishing date WP6
+    
+    required: "* Champ requis"
 
   login:
     title: CITC - Connexion

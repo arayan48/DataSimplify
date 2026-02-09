@@ -1,35 +1,35 @@
 [
     {
         "id": "1",
-        "nom": "Partenaire A",
-        "telephone": "1584654851",
-        "email": "dqsdqd@dqsd.com",
-        "adresse": "52 rue sqsq",
-        "ville": "LIlle",
-        "codePostal": "59000",
-        "siteWeb": "",
+        "nom": "Google",
+        "telephone": "01 42 68 53 00",
+        "email": "accounts-support@google.com",
+        "adresse": "Adresse officielle : 8 Rue de Londres",
+        "ville": "Paris",
+        "codePostal": "75009",
+        "siteWeb": "https:\/\/google.com",
         "description": ""
     },
     {
         "id": "2",
-        "nom": "Partenaire B",
-        "telephone": "",
+        "nom": "Microsoft France",
+        "telephone": "09 70 01 90 90",
         "email": "",
-        "adresse": "",
-        "ville": "",
-        "codePostal": "",
-        "siteWeb": "",
+        "adresse": "39 Quai du Président Roosevelt",
+        "ville": "Issy-les-Moulineaux",
+        "codePostal": "92130",
+        "siteWeb": "https:\/\/support.microsoft.com\/fr-fr\/contactus",
         "description": ""
     },
     {
         "id": "3",
-        "nom": "Partenaire C",
+        "nom": "Apple France",
         "telephone": "",
         "email": "",
-        "adresse": "",
-        "ville": "",
-        "codePostal": "",
-        "siteWeb": "",
+        "adresse": "7 Place d’Iéna",
+        "ville": "Paris Cedex 16",
+        "codePostal": "75773 ",
+        "siteWeb": "https:\/\/support.apple.com\/fr-fr\/contact",
         "description": ""
     }
 ]

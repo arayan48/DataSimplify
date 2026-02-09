@@ -137,15 +137,23 @@
 {% endblock %}
 
 {% block body %}
-<div class="admin-container" data-controller="users">
+<div class="admin-container" data-controller="users"
+     data-users-add-user-value="{{ 'app.js.users.add_user'|trans }}"
+     data-users-edit-user-value="{{ 'app.js.users.edit_user'|trans }}"
+     data-users-password-required-value="{{ 'app.js.users.password_required'|trans }}"
+     data-users-confirm-delete-multiple-value="{{ 'app.js.users.confirm_delete_multiple'|trans }}"
+     data-users-confirm-delete-single-value="{{ 'app.js.users.confirm_delete_single'|trans }}"
+     data-users-success-value="{{ 'app.js.users.success'|trans }}"
+     data-users-error-value="{{ 'app.js.users.error'|trans }}"
+     data-users-password-generated-value="{{ 'app.js.users.password_generated'|trans }}">
     {% include 'admin/_sidebar.html.twig' %}
 
     <main class="admin-content">
         <div class="page-header">
-            <h1>{{ 'Gestion des Utilisateurs'|trans }}</h1>
+            <h1>{{ 'app.common.users_management'|trans }}</h1>
             <div class="header-actions">
                 <button class="btn btn-danger" data-action="click->users#deleteSelected" data-users-target="deleteBtn" disabled>
-                    {{ 'Supprimer la sélection'|trans }}
+                    {{ 'app.common.delete_selection'|trans }}
                 </button>
                 <button class="btn btn-primary" data-action="click->users#openCreateModal">
                     + {{ 'app.common.add_user'|trans }}

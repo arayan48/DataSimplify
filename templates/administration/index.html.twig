@@ -4,13 +4,19 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('styles/administrateur/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('styles/administrateur/dashboard.css') }}?v={{ random() }}">
 {% endblock %}
 
 {% block body %}
-<div class="admin-filter-bar">
+<form method="get" action="{{ path('app_administration_dashboard') }}" class="admin-filter-bar">
     <div class="admin-search-container">
-        <input type="text" class="admin-search-input" placeholder="{{ 'app.administration.search_placeholder'|trans }}">
+        <input 
+            type="text" 
+            class="admin-search-input" 
+            name="search"
+            placeholder="{{ 'app.administration.search_placeholder'|trans }}"
+            value="{{ searchQuery|default('') }}"
+        >
         <svg class="admin-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="11" cy="11" r="8"></circle>
             <path d="m21 21-4.35-4.35"></path>
@@ -18,36 +24,60 @@
     </div>
     
     <div class="admin-select-container">
-        <select class="admin-select" id="admin-filter1">
+        <select 
+            class="admin-select" 
+            name="wp"
+            onchange="this.form.submit()"
+        >
             <option value="">{{ 'app.administration.work_package'|trans }}</option>
-            <option value="wp2">WP2</option>
-            <option value="wp4">WP4</option>
-            <option value="wp5">WP5</option>
-            <option value="wp6">WP6</option>
-            <option value="wp7">WP7</option>
+            <option value="wp2" {% if workPackageFilter == 'wp2' %}selected{% endif %}>WP2</option>
+            <option value="wp4" {% if workPackageFilter == 'wp4' %}selected{% endif %}>WP4</option>
+            <option value="wp5" {% if workPackageFilter == 'wp5' %}selected{% endif %}>WP5</option>
+            <option value="wp6" {% if workPackageFilter == 'wp6' %}selected{% endif %}>WP6</option>
+            <option value="wp7" {% if workPackageFilter == 'wp7' %}selected{% endif %}>WP7</option>
         </select>
     </div>
     
     <div class="admin-select-container">
-        <select class="admin-select" id="admin-filter2">
+        <select 
+            class="admin-select" 
+            name="year"
+            onchange="this.form.submit()"
+        >
             <option value="">{{ 'app.administration.year'|trans }}</option>
 
             {% for i in 0..5 %}
-                <option value="{{ currentYear - i }}">{{ currentYear - i }}</option>
+                <option value="{{ currentYear - i }}" {% if yearFilter == currentYear - i %}selected{% endif %}>{{ currentYear - i }}</option>
             {% endfor %}
         </select>
     </div>
 
-        <div class="admin-select-container">
-        <select class="admin-select" id="admin-filter3">
+    <div class="admin-select-container">
+        <select 
+            class="admin-select" 
+            name="partner"
+            onchange="this.form.submit()"
+        >
             <option value="">{{ 'app.administration.partners'|trans }}</option>
             {% if partenaires is defined %}
                 {% for partenaire in partenaires %}
-                    <option value="{{ partenaire }}">{{ partenaire }}</option>
+                    <option value="{{ partenaire }}" {% if partenaireFilter == partenaire %}selected{% endif %}>{{ partenaire }}</option>
                 {% endfor %}
             {% endif %}
         </select>
     </div>
+    
+    {% if searchQuery or workPackageFilter or yearFilter or partenaireFilter %}
+        <a href="{{ path('app_administration_dashboard') }}" class="admin-stats-btn admin-reset-btn">
+            <svg class="stats-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
+                <path d="M21 3v5h-5"></path>
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
+                <path d="M3 21v-5h5"></path>
+            </svg>
+            <span class="btn-text">{{ 'app.administration.reset_filters'|trans }}</span>
+        </a>
+    {% endif %}
     
     <a href="{{ path('app_administration_statistics') }}" class="admin-stats-btn">
         <svg class="stats-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -55,7 +85,7 @@
             <line x1="18" y1="20" x2="18" y2="4"></line>
             <line x1="6" y1="20" x2="6" y2="16"></line>
         </svg>
-        {{ 'app.administration.statistics'|trans }}
+        <span class="btn-text">{{ 'app.administration.statistics'|trans }}</span>
     </a>
     
     <a href="{{ path('app_administration_create_entreprise') }}" class="admin-stats-btn">
@@ -63,27 +93,145 @@
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
         </svg>
-        {{ 'app.administration.create_company'|trans }}
+        <span class="btn-text">{{ 'app.administration.create_company'|trans }}</span>
     </a>
-</div>
+</form>
 
 <div class="admin-main-layout">
     <div class="admin-main-content">
-
+        {% if entreprisesGrouped is defined and entreprisesGrouped is not empty %}
+            <div class="admin-table-header">
+                <h2 class="admin-table-title">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/>
+                        <line x1="9" y1="9" x2="15" y2="9"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    Liste des entreprises par catégorie
+                </h2>
+                <p class="admin-table-subtitle">{{ entreprisesGrouped|length }} entreprise(s) trouvée(s)</p>
+            </div>
+            <div class="admin-entreprises-list">
+                {% for item in entreprisesGrouped %}
+                    <div class="admin-folder">
+                        <div class="admin-folder-header" onclick="this.parentElement.classList.toggle('open')">
+                            <div class="admin-folder-toggle">
+                                <svg class="admin-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </div>
+                            <div class="admin-folder-icon">
+                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="7" width="20" height="14" rx="2"/>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                </svg>
+                            </div>
+                            <div class="admin-folder-info">
+                                <h3 class="admin-folder-title">{{ item.entreprise.nom }}</h3>
+                                <div class="admin-folder-meta">
+                                    <span class="admin-folder-location">
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="10" r="3"/>
+                                            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"/>
+                                        </svg>
+                                        {{ item.entreprise.ville }}, {{ item.entreprise.pays }}
+                                    </span>
+                                    <span class="admin-folder-count">{{ item.categories|length }} catégorie(s)</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="admin-folder-content">
+                            {% for category in item.categories %}
+                                <div class="admin-category-item">
+                                    <div class="admin-category-badge">
+                                        {{ category.categorie }}
+                                    </div>
+                                    <div class="admin-category-details">
+                                        {% if category.categorie == 'WP2' %}
+                                            <span class="admin-detail-item">
+                                                <span class="admin-detail-label">Score DMAO:</span>
+                                                <span class="admin-detail-value">{{ category.data.scoreDmao ?? 'N/A' }}</span>
+                                            </span>
+                                        {% elseif category.categorie == 'WP5 Event' %}
+                                            <span class="admin-detail-item">
+                                                <span class="admin-detail-label">Année:</span>
+                                                <span class="admin-detail-value">{{ category.data.year ?? 'N/A' }}</span>
+                                            </span>
+                                        {% elseif category.categorie == 'WP5 Formation' %}
+                                            <span class="admin-detail-item">
+                                                <span class="admin-detail-label">Technologie:</span>
+                                                <span class="admin-detail-value">{{ category.data.technology ?? 'N/A' }}</span>
+                                            </span>
+                                        {% elseif category.categorie == 'WP6' %}
+                                            <span class="admin-detail-item">
+                                                <span class="admin-detail-label">Technologie:</span>
+                                                <span class="admin-detail-value">{{ category.data.technology ?? 'N/A' }}</span>
+                                            </span>
+                                        {% elseif category.categorie == 'WP7' %}
+                                            <span class="admin-detail-item">
+                                                <span class="admin-detail-label">Montant:</span>
+                                                <span class="admin-detail-value">{{ category.data.amountTrigger ?? 'N/A' }}</span>
+                                            </span>
+                                        {% elseif category.categorie == 'Mise en Relation' %}
+                                            <span class="admin-detail-item">
+                                                <span class="admin-detail-label">Technologie:</span>
+                                                <span class="admin-detail-value">{{ category.data.technology ?? 'N/A' }}</span>
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <p class="admin-no-data">{{ 'app.administration.no_data'|trans }}</p>
+        {% endif %}
     </div>
     
     <div class="admin-sidebar-info">
-        <h3 class="sidebar-title">{{ 'app.administration.company'|trans }}</h3>
+        <h3 class="sidebar-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="7" width="20" height="14" rx="2"/>
+                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+            {{ 'app.administration.company'|trans }}
+        </h3>
         <div class="sidebar-separator"></div>
         <div class="sidebar-list-container">
-            {% if partenaires is defined and partenaires is not empty %}
-                <ul class="partenaire-list">
-                    {% for partenaire in partenaires %}
-                        <li class="partenaire-item">{{ partenaire }}</li>
+            {% if entreprises is defined and entreprises is not empty %}
+                <div class="entreprise-sidebar-list">
+                    {% for entreprise in entreprises %}
+                        <div class="entreprise-sidebar-card">
+                            <div class="sidebar-card-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
+                                    <rect x="2" y="7" width="20" height="14" rx="2"/>
+                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                                </svg>
+                            </div>
+                            <div class="sidebar-card-content">
+                                <h4 class="sidebar-card-name">{{ entreprise.nom }}</h4>
+                                {% if entreprise.ville %}
+                                    <div class="sidebar-card-location">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <circle cx="12" cy="10" r="3"/>
+                                            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"/>
+                                        </svg>
+                                        <span>{{ entreprise.ville }}{% if entreprise.pays %}, {{ entreprise.pays }}{% endif %}</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="sidebar-card-arrow">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 18 15 12 9 6"/>
+                                </svg>
+                            </div>
+                        </div>
                     {% endfor %}
-                </ul>
+                </div>
             {% else %}
-                <p class="no-data">{{ 'app.administration.no_company'|trans }}</p>
+                <p class="admin-no-data">{{ 'app.administration.no_company'|trans }}</p>
             {% endif %}
         </div>
     </div>

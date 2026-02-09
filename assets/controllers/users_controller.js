@@ -15,9 +15,28 @@ export default class extends Controller {
         'detailNom', 'detailPartenaire', 'detailRoles', 'editFromDetailBtn'
     ];
 
+    static values = {
+        addUser: String,
+        editUser: String,
+        passwordRequired: String,
+        confirmDeleteMultiple: String,
+        confirmDeleteSingle: String,
+        success: String,
+        error: String,
+        passwordGenerated: String
+    };
+
     connect() {
         console.log('Users controller loaded');
         this.currentUserData = null;
+    }
+
+    // Helper pour obtenir l'URL avec la locale
+    getLocalizedUrl(path) {
+        const locale = document.documentElement.lang || 'fr';
+        const url = `/${locale}${path}`;
+        console.log('getLocalizedUrl:', path, '->', url, 'locale:', locale);
+        return url;
     }
 
     // Empêcher le scroll de la page quand on scroll dans le modal
@@ -53,7 +72,7 @@ export default class extends Controller {
 
     // Modal
     openCreateModal() {
-        this.modalTitleTarget.textContent = 'Ajouter un utilisateur';
+        this.modalTitleTarget.textContent = this.addUserValue;
         this.userIdTarget.value = '';
         this.usernameInputTarget.value = '';
         this.prenomInputTarget.value = '';
@@ -84,7 +103,7 @@ export default class extends Controller {
         const partenaireId = btn.dataset.userPartenaireId;
         const roles = JSON.parse(btn.dataset.userRoles);
 
-        this.modalTitleTarget.textContent = 'Modifier l\'utilisateur';
+        this.modalTitleTarget.textContent = this.editUserValue;
         this.userIdTarget.value = userId;
         this.emailInputTarget.value = email;
         this.usernameInputTarget.value = username;
@@ -157,13 +176,13 @@ export default class extends Controller {
         try {
             let url, method;
             if (userId) {
-                url = `/administrateur/users/${userId}/edit`;
+                url = this.getLocalizedUrl(`/administrateur/users/${userId}/edit`);
                 method = 'POST';
             } else {
-                url = '/administrateur/users/create';
+                url = this.getLocalizedUrl('/administrateur/users/create');
                 method = 'POST';
                 if (!password) {
-                    alert('Le mot de passe est requis pour créer un utilisateur');
+                    alert(this.passwordRequiredValue);
                     return;
                 }
             }
@@ -202,13 +221,14 @@ export default class extends Controller {
 
         if (selectedIds.length === 0) return;
 
-        if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedIds.length} utilisateur(s) ?`)) {
+        const confirmMessage = this.confirmDeleteMultipleValue.replace('{count}', selectedIds.length);
+        if (!confirm(confirmMessage)) {
             return;
         }
 
         try {
             window.showLoader();
-            const response = await fetch('/administrateur/users/delete', {
+            const response = await fetch(this.getLocalizedUrl('/administrateur/users/delete'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -228,7 +248,7 @@ export default class extends Controller {
         } catch (error) {
             window.hideLoader();
             console.error('Erreur:', error);
-            this.showNotification('Une erreur est survenue', 'error');
+            this.showNotification(this.errorValue, 'error');
         }
     }
 
@@ -276,7 +296,7 @@ export default class extends Controller {
         this.passwordConfirmInputTarget.type = 'text';
         this.passwordErrorTarget.style.display = 'none';
         
-        this.showNotification('Mot de passe généré avec succès', 'success');
+        this.showNotification(this.passwordGeneratedValue, 'success');
     }
 
     // Afficher/masquer le mot de passe
@@ -446,13 +466,14 @@ export default class extends Controller {
         const userId = this.currentUserData.userId;
         const username = this.currentUserData.username || this.currentUserData.email;
 
-        if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur "${username}" ?`)) {
+        const confirmMessage = this.confirmDeleteSingleValue.replace('{name}', username);
+        if (!confirm(confirmMessage)) {
             return;
         }
 
         try {
             window.showLoader();
-            const response = await fetch('/administrateur/users/delete', {
+            const response = await fetch(this.getLocalizedUrl('/administrateur/users/delete'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -473,7 +494,7 @@ export default class extends Controller {
         } catch (error) {
             window.hideLoader();
             console.error('Erreur:', error);
-            this.showNotification('Une erreur est survenue', 'error');
+            this.showNotification(this.errorValue, 'error');
         }
     }
 }

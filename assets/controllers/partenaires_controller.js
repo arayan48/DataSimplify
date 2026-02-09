@@ -10,6 +10,16 @@ export default class extends Controller {
         'addDropdown', 'addUsersList', 'addSearchInput'
     ];
 
+    static values = {
+        addPartner: String,
+        editPartner: String,
+        confirmDelete: String,
+        error: String,
+        selectUser: String,
+        usersAdded: String,
+        userRemoved: String
+    };
+
     connect() {
         console.log('Partenaires controller loaded');
         this.currentPartenaireId = null;
@@ -19,6 +29,14 @@ export default class extends Controller {
         
         // Fermer les dropdowns si on clique en dehors
         document.addEventListener('click', this.handleClickOutside.bind(this));
+    }
+
+    // Helper pour obtenir l'URL avec la locale
+    getLocalizedUrl(path) {
+        const locale = document.documentElement.lang || 'fr';
+        const url = `/${locale}${path}`;
+        console.log('getLocalizedUrl (partenaires):', path, '->', url, 'locale:', locale);
+        return url;
     }
 
     disconnect() {
@@ -74,7 +92,7 @@ export default class extends Controller {
 
     // Modal
     openCreateModal() {
-        this.modalTitleTarget.textContent = 'Ajouter un partenaire';
+        this.modalTitleTarget.textContent = this.addPartnerValue;
         this.partenaireIdTarget.value = '';
         this.nomInputTarget.value = '';
         this.telephoneInputTarget.value = '';
@@ -101,7 +119,7 @@ export default class extends Controller {
     async openEditModal(event) {
         const btn = event.currentTarget;
         
-        this.modalTitleTarget.textContent = 'Modifier le partenaire';
+        this.modalTitleTarget.textContent = this.editPartnerValue;
         this.currentPartenaireId = btn.dataset.partenaireId;
         this.partenaireIdTarget.value = this.currentPartenaireId;
         this.nomInputTarget.value = btn.dataset.partenaireNom || '';
@@ -138,7 +156,7 @@ export default class extends Controller {
         this.usersListTarget.innerHTML = '<div class="loading">Chargement...</div>';
         
         try {
-            const response = await fetch(`/administrateur/partenaires/${partenaireId}/users`);
+            const response = await fetch(this.getLocalizedUrl(`/administrateur/partenaires/${partenaireId}/users`));
             const data = await response.json();
             this.allUsers = data.users;
             this.displayUsers(data.users);
@@ -154,7 +172,7 @@ export default class extends Controller {
     // Charger tous les utilisateurs disponibles
     async loadAvailableUsers() {
         try {
-            const response = await fetch('/administrateur/users/all');
+            const response = await fetch(this.getLocalizedUrl('/administrateur/users/all'));
             const data = await response.json();
             this.allAvailableUsers = data.users || [];
         } catch (error) {
@@ -279,7 +297,7 @@ export default class extends Controller {
     // Valider l'ajout des utilisateurs sélectionnés
     async validateAddUsers() {
         if (this.selectedUserIds.size === 0) {
-            this.showNotification('Veuillez sélectionner au moins un utilisateur', 'error');
+            this.showNotification(this.selectUserValue, 'error');
             return;
         }
         
@@ -288,7 +306,7 @@ export default class extends Controller {
             
             // Ajouter chaque utilisateur sélectionné
             for (const userId of this.selectedUserIds) {
-                await fetch(`/administrateur/users/${userId}/edit`, {
+                await fetch(this.getLocalizedUrl(`/administrateur/users/${userId}/edit`), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -298,7 +316,8 @@ export default class extends Controller {
             }
             
             window.hideLoader();
-            this.showNotification(`${this.selectedUserIds.size} utilisateur(s) ajouté(s)`, 'success');
+            const message = this.usersAddedValue.replace('{count}', this.selectedUserIds.size);
+            this.showNotification(message, 'success');
             this.addDropdownTarget.style.display = 'none';
             this.selectedUserIds.clear();
             await this.loadUsersForPartenaire(this.currentPartenaireId);
@@ -316,7 +335,7 @@ export default class extends Controller {
         
         try {
             window.showLoader();
-            await fetch(`/administrateur/users/${userId}/edit`, {
+            await fetch(this.getLocalizedUrl(`/administrateur/users/${userId}/edit`), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -325,7 +344,7 @@ export default class extends Controller {
             });
 
             window.hideLoader();
-            this.showNotification('Utilisateur retiré du partenaire', 'success');
+            this.showNotification(this.userRemovedValue, 'success');
             await this.loadUsersForPartenaire(this.currentPartenaireId);
         } catch (error) {
             window.hideLoader();
@@ -354,10 +373,10 @@ export default class extends Controller {
         try {
             let url, method;
             if (partenaireId) {
-                url = `/administrateur/partenaires/${partenaireId}/edit`;
+                url = this.getLocalizedUrl(`/administrateur/partenaires/${partenaireId}/edit`);
                 method = 'POST';
             } else {
-                url = '/administrateur/partenaires/create';
+                url = this.getLocalizedUrl('/administrateur/partenaires/create');
                 method = 'POST';
             }
 
@@ -395,13 +414,14 @@ export default class extends Controller {
 
         if (selectedIds.length === 0) return;
 
-        if (!confirm(`Êtes-vous sûr de vouloir supprimer ${selectedIds.length} partenaire(s) ?`)) {
+        const confirmMessage = this.confirmDeleteValue.replace('{count}', selectedIds.length);
+        if (!confirm(confirmMessage)) {
             return;
         }
 
         try {
             window.showLoader();
-            const response = await fetch('/administrateur/partenaires/delete', {
+            const response = await fetch(this.getLocalizedUrl('/administrateur/partenaires/delete'), {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

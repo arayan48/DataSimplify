@@ -276,6 +276,162 @@
     min-height: 100px;
 }
 
+/* Category Selection Grid */
+.selection-description {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+.category-selection-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+}
+
+.category-checkbox {
+    position: relative;
+}
+
+.category-checkbox input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.category-checkbox label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: var(--white);
+}
+
+.category-checkbox label strong {
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.category-checkbox label span {
+    color: var(--text-light);
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.category-checkbox input[type="checkbox"]:checked + label {
+    border-color: #333;
+    background-color: #f8f9fa;
+}
+
+.category-checkbox input[type="checkbox"]:checked + label strong {
+    color: #333;
+}
+
+.category-checkbox label:hover {
+    border-color: #999;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Conditional sections */
+.conditional-section {
+    transition: all 0.3s ease;
+}
+
+/* Country Selector */
+.country-selector {
+    position: relative;
+}
+
+.country-input {
+    cursor: pointer;
+    background-color: var(--white);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    padding-right: 2.5rem;
+}
+
+.country-dropdown {
+    position: fixed !important;
+    margin-top: 0.25rem;
+    background: var(--white) !important;
+    border: 2px solid #333 !important;
+    border-radius: 8px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35) !important;
+    z-index: 999999 !important;
+    max-height: 400px;
+    display: none;
+    flex-direction: column;
+    min-width: 300px;
+}
+
+.country-search {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: sticky;
+    top: 0;
+    background: var(--white);
+    z-index: 1;
+}
+
+.country-search i {
+    color: var(--text-light);
+    font-size: 0.9rem;
+}
+
+.country-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    padding: 0;
+}
+
+.country-list {
+    overflow-y: auto;
+    max-height: 350px;
+}
+
+.country-category {
+    margin-bottom: 0.5rem;
+}
+
+.country-category-header {
+    padding: 0.5rem 0.75rem;
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-light);
+    background-color: #f8f9fa;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+
+.country-item {
+    padding: 0.625rem 0.75rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.country-item:hover {
+    background-color: #f8f9fa;
+}
+
+.country-item:active {
+    background-color: #e9ecef;
+}
+
 /* Actions */
 .form-actions {
     display: flex;
@@ -316,6 +472,47 @@
 
 .btn-cancel:hover {
     background-color: var(--danger-hover);
+}
+
+/* Alert Messages */
+.alert {
+    padding: 0.875rem 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.alert i {
+    font-size: 1.125rem;
+}
+
+.alert-error {
+    background-color: #fee;
+    color: #c33;
+    border: 1px solid #fcc;
+}
+
+.alert-success {
+    background-color: #efe;
+    color: #383;
+    border: 1px solid #cfc;
+}
+
+.form-help {
+    display: block;
+    margin-top: 0.375rem;
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-style: italic;
+}
+
+select option[data-no-partner="true"] {
+    color: #c33;
+    font-style: italic;
 }
 
 /* Responsive */

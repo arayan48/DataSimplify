@@ -24,6 +24,20 @@
     </div>
 
     <form method="POST" class="create-entreprise-form">
+        {% for message in app.flashes('error') %}
+            <div class="alert alert-error">
+                <i class="fi fi-rs-exclamation"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+        
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                <i class="fi fi-rs-check"></i>
+                {{ message }}
+            </div>
+        {% endfor %}
+        
         <div class="accordion-container">
             <!-- Section 1: Information Entreprise -->
             <div class="accordion-item">
@@ -43,9 +57,43 @@
                                 <label for="nom">{{ 'app.create_entreprise.company_name'|trans }} <span class="required">*</span></label>
                                 <input type="text" id="nom" name="nom" required>
                             </div>
+                            {% if app.user and 'ROLE_ADMINISTRATEUR' in app.user.roles %}
                             <div class="form-group">
-                                <label for="siret">{{ 'app.create_entreprise.siret'|trans }} <span class="required">*</span></label>
-                                <input type="text" id="siret" name="siret" required>
+                                <label for="partenaire_id">{{ 'app.create_entreprise.assign_partner'|trans }}</label>
+                                <select id="partenaire_id" name="partenaire_id">
+                                    <option value="">{{ 'app.create_entreprise.use_my_partner'|trans }}</option>
+                                    {% for partenaire in partenaires %}
+                                        <option value="{{ partenaire.id }}">{{ partenaire.nom }}</option>
+                                    {% endfor %}
+                                </select>
+                                <small class="form-help">Laissez vide pour utiliser votre partenaire</small>
+                            </div>
+                            {% else %}
+                            <div class="form-group">
+                                <label for="annee_edih">{{ 'app.create_entreprise.edih_year'|trans }}</label>
+                                <input type="date" id="annee_edih" name="annee_edih" placeholder="jj/mm/aaaa">
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        {% if app.user and 'ROLE_ADMINISTRATEUR' in app.user.roles %}
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="annee_edih">{{ 'app.create_entreprise.edih_year'|trans }}</label>
+                                <input type="date" id="annee_edih" name="annee_edih" placeholder="jj/mm/aaaa">
+                            </div>
+                            <div class="form-group"></div>
+                        </div>
+                        {% endif %}
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="type_structure">{{ 'app.create_entreprise.structure_type'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="type_structure" name="type_structure" required placeholder="SA, SARL, SAS, Association...">
+                            </div>
+                            <div class="form-group">
+                                <label for="annee_creation">{{ 'app.create_entreprise.creation_year'|trans }} <span class="required">*</span></label>
+                                <input type="number" id="annee_creation" name="annee_creation" min="1800" max="2100" required placeholder="2020" pattern="[0-9]{4}" title="L'année doit être un nombre de 4 chiffres">
                             </div>
                         </div>
 
@@ -55,6 +103,36 @@
                                 <input type="text" id="secteur" name="secteur" required>
                             </div>
                             <div class="form-group">
+                                <label for="siret">{{ 'app.create_entreprise.siret'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="siret" name="siret" required placeholder="12345678900012" pattern="[0-9]{14}" maxlength="14" title="Le SIRET doit contenir exactement 14 chiffres">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="taille">{{ 'app.create_entreprise.company_size'|trans }} <span class="required">*</span></label>
+                                <select id="taille" name="taille" required>
+                                    <option value="">{{ 'app.create_entreprise.select_size'|trans }}</option>
+                                    <option value="Micro">Micro-entreprise (0 {{ 'app.create_entreprise.employees'|trans }})</option>
+                                    <option value="TPE">TPE (1-9 {{ 'app.create_entreprise.employees'|trans }})</option>
+                                    <option value="PME_Petite">Petite PME (10-49 {{ 'app.create_entreprise.employees'|trans }})</option>
+                                    <option value="PME_Moyenne">Moyenne PME (50-249 {{ 'app.create_entreprise.employees'|trans }})</option>
+                                    <option value="ETI">ETI (250-4999 {{ 'app.create_entreprise.employees'|trans }})</option>
+                                    <option value="GE">Grande Entreprise (5000+ {{ 'app.create_entreprise.employees'|trans }})</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="chiffre_affaires">{{ 'app.create_entreprise.turnover'|trans }}</label>
+                                <input type="text" id="chiffre_affaires" name="chiffre_affaires" placeholder="1000000" pattern="[0-9 ]+" title="Le chiffre d'affaires doit contenir uniquement des chiffres">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="codepostal">{{ 'app.create_entreprise.postal_code'|trans }} <span class="required">*</span></label>
+                                <input type="text" id="codepostal" name="codepostal" required placeholder="75001" pattern="[0-9]{4,6}" maxlength="6" title="Le code postal doit contenir uniquement des chiffres">
+                            </div>
+                            <div class="form-group">
                                 <label for="ville">{{ 'app.create_entreprise.city'|trans }} <span class="required">*</span></label>
                                 <input type="text" id="ville" name="ville" required>
                             </div>
@@ -62,18 +140,121 @@
 
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="codepostal">{{ 'app.create_entreprise.postal_code'|trans }} <span class="required">*</span></label>
-                                <input type="text" id="codepostal" name="codepostal" required>
+                                <label for="region">{{ 'app.create_entreprise.region'|trans }}</label>
+                                <input type="text" id="region" name="region" placeholder="Île-de-France">
                             </div>
                             <div class="form-group">
                                 <label for="pays">{{ 'app.create_entreprise.country'|trans }} <span class="required">*</span></label>
-                                <input type="text" id="pays" name="pays" value="{{ 'app.create_entreprise.france'|trans }}" required>
+                                <div class="country-selector" data-create-entreprise-target="countrySelector">
+                                    <input type="text" 
+                                           id="pays" 
+                                           name="pays" 
+                                           value="France" 
+                                           required 
+                                           readonly
+                                           class="country-input"
+                                           data-action="click->create-entreprise#toggleCountryDropdown"
+                                           data-create-entreprise-target="countryInput">
+                                    <div class="country-dropdown" data-create-entreprise-target="countryDropdown" style="display: none;">
+                                        <div class="country-search">
+                                            <i class="fi fi-rs-search"></i>
+                                            <input type="text" 
+                                                   placeholder="{{ 'app.create_entreprise.search_country'|trans }}"
+                                                   data-action="input->create-entreprise#filterCountries"
+                                                   data-create-entreprise-target="countrySearch">
+                                        </div>
+                                        <div class="country-list" data-create-entreprise-target="countryList">
+                                            <div class="country-category">
+                                                <div class="country-category-header">Europe</div>
+                                                <div class="country-item" data-country="France">France</div>
+                                                <div class="country-item" data-country="Allemagne">Allemagne</div>
+                                                <div class="country-item" data-country="Belgique">Belgique</div>
+                                                <div class="country-item" data-country="Espagne">Espagne</div>
+                                                <div class="country-item" data-country="Italie">Italie</div>
+                                                <div class="country-item" data-country="Portugal">Portugal</div>
+                                                <div class="country-item" data-country="Pays-Bas">Pays-Bas</div>
+                                                <div class="country-item" data-country="Suisse">Suisse</div>
+                                                <div class="country-item" data-country="Royaume-Uni">Royaume-Uni</div>
+                                                <div class="country-item" data-country="Irlande">Irlande</div>
+                                                <div class="country-item" data-country="Pologne">Pologne</div>
+                                                <div class="country-item" data-country="Suède">Suède</div>
+                                                <div class="country-item" data-country="Norvège">Norvège</div>
+                                                <div class="country-item" data-country="Danemark">Danemark</div>
+                                                <div class="country-item" data-country="Finlande">Finlande</div>
+                                                <div class="country-item" data-country="Grèce">Grèce</div>
+                                                <div class="country-item" data-country="Autriche">Autriche</div>
+                                                <div class="country-item" data-country="République Tchèque">République Tchèque</div>
+                                                <div class="country-item" data-country="Hongrie">Hongrie</div>
+                                                <div class="country-item" data-country="Roumanie">Roumanie</div>
+                                            </div>
+                                            <div class="country-category">
+                                                <div class="country-category-header">Afrique</div>
+                                                <div class="country-item" data-country="Maroc">Maroc</div>
+                                                <div class="country-item" data-country="Algérie">Algérie</div>
+                                                <div class="country-item" data-country="Tunisie">Tunisie</div>
+                                                <div class="country-item" data-country="Égypte">Égypte</div>
+                                                <div class="country-item" data-country="Afrique du Sud">Afrique du Sud</div>
+                                                <div class="country-item" data-country="Nigeria">Nigeria</div>
+                                                <div class="country-item" data-country="Kenya">Kenya</div>
+                                                <div class="country-item" data-country="Sénégal">Sénégal</div>
+                                                <div class="country-item" data-country="Côte d'Ivoire">Côte d'Ivoire</div>
+                                                <div class="country-item" data-country="Cameroun">Cameroun</div>
+                                                <div class="country-item" data-country="Ghana">Ghana</div>
+                                                <div class="country-item" data-country="Éthiopie">Éthiopie</div>
+                                            </div>
+                                            <div class="country-category">
+                                                <div class="country-category-header">Asie</div>
+                                                <div class="country-item" data-country="Chine">Chine</div>
+                                                <div class="country-item" data-country="Japon">Japon</div>
+                                                <div class="country-item" data-country="Inde">Inde</div>
+                                                <div class="country-item" data-country="Corée du Sud">Corée du Sud</div>
+                                                <div class="country-item" data-country="Thaïlande">Thaïlande</div>
+                                                <div class="country-item" data-country="Vietnam">Vietnam</div>
+                                                <div class="country-item" data-country="Singapour">Singapour</div>
+                                                <div class="country-item" data-country="Malaisie">Malaisie</div>
+                                                <div class="country-item" data-country="Indonésie">Indonésie</div>
+                                                <div class="country-item" data-country="Philippines">Philippines</div>
+                                                <div class="country-item" data-country="Pakistan">Pakistan</div>
+                                                <div class="country-item" data-country="Bangladesh">Bangladesh</div>
+                                            </div>
+                                            <div class="country-category">
+                                                <div class="country-category-header">Amérique du Nord</div>
+                                                <div class="country-item" data-country="États-Unis">États-Unis</div>
+                                                <div class="country-item" data-country="Canada">Canada</div>
+                                                <div class="country-item" data-country="Mexique">Mexique</div>
+                                            </div>
+                                            <div class="country-category">
+                                                <div class="country-category-header">Amérique du Sud</div>
+                                                <div class="country-item" data-country="Brésil">Brésil</div>
+                                                <div class="country-item" data-country="Argentine">Argentine</div>
+                                                <div class="country-item" data-country="Chili">Chili</div>
+                                                <div class="country-item" data-country="Colombie">Colombie</div>
+                                                <div class="country-item" data-country="Pérou">Pérou</div>
+                                                <div class="country-item" data-country="Venezuela">Venezuela</div>
+                                            </div>
+                                            <div class="country-category">
+                                                <div class="country-category-header">Moyen-Orient</div>
+                                                <div class="country-item" data-country="Émirats Arabes Unis">Émirats Arabes Unis</div>
+                                                <div class="country-item" data-country="Arabie Saoudite">Arabie Saoudite</div>
+                                                <div class="country-item" data-country="Qatar">Qatar</div>
+                                                <div class="country-item" data-country="Israël">Israël</div>
+                                                <div class="country-item" data-country="Turquie">Turquie</div>
+                                                <div class="country-item" data-country="Liban">Liban</div>
+                                            </div>
+                                            <div class="country-category">
+                                                <div class="country-category-header">Océanie</div>
+                                                <div class="country-item" data-country="Australie">Australie</div>
+                                                <div class="country-item" data-country="Nouvelle-Zélande">Nouvelle-Zélande</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
                         <div class="form-group form-row full">
-                            <label for="adresse">{{ 'app.create_entreprise.address'|trans }} <span class="required">*</span></label>
-                            <input type="text" id="adresse" name="adresse" required>
+                            <label for="adresse">{{ 'app.create_entreprise.address'|trans }}</label>
+                            <input type="text" id="adresse" name="adresse">
                         </div>
 
                         <div class="form-group form-row full">
@@ -84,12 +265,12 @@
                 </div>
             </div>
 
-            <!-- Section 2: Coordonnées -->
+            <!-- Section 2: Sélection des catégories -->
             <div class="accordion-item">
                 <div class="accordion-header">
                     <h3>
-                        <i class="fi fi-rs-phone-call"></i>
-                        {{ 'app.create_entreprise.section_coordinates'|trans }}
+                        <i class="fi fi-rs-checkbox"></i>
+                        {{ 'app.create_entreprise.section_selection'|trans }}
                     </h3>
                     <span class="accordion-icon">
                         <i class="fi fi-rs-angle-down"></i>
@@ -97,53 +278,61 @@
                 </div>
                 <div class="accordion-content">
                     <div class="accordion-body">
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="telephone">{{ 'app.create_entreprise.phone_main'|trans }}</label>
-                                <input type="tel" id="telephone" name="telephone" placeholder="+33 1 23 45 67 89">
+                        <p class="selection-description">{{ 'app.create_entreprise.selection_description'|trans }}</p>
+                        <div class="category-selection-grid">
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat_wp2" name="categories[]" value="wp2" data-create-entreprise-target="categoryCheckbox">
+                                <label for="cat_wp2">
+                                    <strong>WP2</strong>
+                                    <span>{{ 'app.create_entreprise.cat_wp2'|trans }}</span>
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="telephone_secondaire">{{ 'app.create_entreprise.phone_secondary'|trans }}</label>
-                                <input type="tel" id="telephone_secondaire" name="telephone_secondaire">
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat_wp5_event" name="categories[]" value="wp5_event" data-create-entreprise-target="categoryCheckbox">
+                                <label for="cat_wp5_event">
+                                    <strong>WP5 - {{ 'app.create_entreprise.event'|trans }}</strong>
+                                    <span>{{ 'app.create_entreprise.cat_wp5_event'|trans }}</span>
+                                </label>
                             </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="email">{{ 'app.create_entreprise.email_main'|trans }}</label>
-                                <input type="email" id="email" name="email" placeholder="contact@entreprise.fr">
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat_wp5_formation" name="categories[]" value="wp5_formation" data-create-entreprise-target="categoryCheckbox">
+                                <label for="cat_wp5_formation">
+                                    <strong>WP5 - {{ 'app.create_entreprise.formation'|trans }}</strong>
+                                    <span>{{ 'app.create_entreprise.cat_wp5_formation'|trans }}</span>
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="email_secondaire">{{ 'app.create_entreprise.email_secondary'|trans }}</label>
-                                <input type="email" id="email_secondaire" name="email_secondaire">
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat_wp6" name="categories[]" value="wp6" data-create-entreprise-target="categoryCheckbox">
+                                <label for="cat_wp6">
+                                    <strong>WP6</strong>
+                                    <span>{{ 'app.create_entreprise.cat_wp6'|trans }}</span>
+                                </label>
                             </div>
-                        </div>
-
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label for="site_web">{{ 'app.create_entreprise.website'|trans }}</label>
-                                <input type="url" id="site_web" name="site_web" placeholder="https://www.exemple.fr">
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat_wp7" name="categories[]" value="wp7" data-create-entreprise-target="categoryCheckbox">
+                                <label for="cat_wp7">
+                                    <strong>WP7</strong>
+                                    <span>{{ 'app.create_entreprise.cat_wp7'|trans }}</span>
+                                </label>
                             </div>
-                            <div class="form-group">
-                                <label for="linkedin">{{ 'app.create_entreprise.linkedin'|trans }}</label>
-                                <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/company/...">
+                            <div class="category-checkbox">
+                                <input type="checkbox" id="cat_relation" name="categories[]" value="relation" data-create-entreprise-target="categoryCheckbox">
+                                <label for="cat_relation">
+                                    <strong>{{ 'app.create_entreprise.relation'|trans }}</strong>
+                                    <span>{{ 'app.create_entreprise.cat_relation'|trans }}</span>
+                                </label>
                             </div>
-                        </div>
-
-                        <div class="form-group form-row full">
-                            <label for="adresse_siege">{{ 'app.create_entreprise.headquarters_address'|trans }}</label>
-                            <textarea id="adresse_siege" name="adresse_siege"></textarea>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Section 3: Représentant -->
-            <div class="accordion-item">
+            <!-- Section WP2 -->
+            <div class="accordion-item conditional-section" data-category="wp2" data-create-entreprise-target="conditionalSection" style="display: none;">
                 <div class="accordion-header">
                     <h3>
-                        <i class="fi fi-rs-user"></i>
-                        {{ 'app.create_entreprise.section_representative'|trans }}
+                        <i class="fi fi-rs-document"></i>
+                        WP2
                     </h3>
                     <span class="accordion-icon">
                         <i class="fi fi-rs-angle-down"></i>
@@ -153,40 +342,297 @@
                     <div class="accordion-body">
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="prenom_representant">{{ 'app.create_entreprise.first_name'|trans }}</label>
-                                <input type="text" id="prenom_representant" name="prenom_representant">
+                                <label for="wp2_score_dmao">{{ 'app.create_entreprise.wp2_score_dmao'|trans }}</label>
+                                <input type="text" id="wp2_score_dmao" name="wp2_score_dmao">
                             </div>
                             <div class="form-group">
-                                <label for="nom_representant">{{ 'app.create_entreprise.last_name'|trans }}</label>
-                                <input type="text" id="nom_representant" name="nom_representant">
+                                <label for="wp2_digital_strategy">{{ 'app.create_entreprise.wp2_digital_strategy'|trans }}</label>
+                                <input type="text" id="wp2_digital_strategy" name="wp2_digital_strategy">
                             </div>
                         </div>
-
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="poste_representant">{{ 'app.create_entreprise.position'|trans }}</label>
-                                <input type="text" id="poste_representant" name="poste_representant" placeholder="{{ 'app.create_entreprise.position'|trans }}">
+                                <label for="wp2_digital_readiness">{{ 'app.create_entreprise.wp2_digital_readiness'|trans }}</label>
+                                <input type="text" id="wp2_digital_readiness" name="wp2_digital_readiness">
                             </div>
                             <div class="form-group">
-                                <label for="telephone_representant">{{ 'app.create_entreprise.phone_main'|trans }}</label>
-                                <input type="tel" id="telephone_representant" name="telephone_representant">
+                                <label for="wp2_human_centric">{{ 'app.create_entreprise.wp2_human_centric'|trans }}</label>
+                                <input type="text" id="wp2_human_centric" name="wp2_human_centric">
                             </div>
                         </div>
-
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="email_representant">{{ 'app.auth.email'|trans }}</label>
-                                <input type="email" id="email_representant" name="email_representant">
+                                <label for="wp2_data_governance">{{ 'app.create_entreprise.wp2_data_governance'|trans }}</label>
+                                <input type="text" id="wp2_data_governance" name="wp2_data_governance">
                             </div>
                             <div class="form-group">
-                                <label for="date_prise_fonction">{{ 'app.create_entreprise.start_date'|trans }}</label>
-                                <input type="date" id="date_prise_fonction" name="date_prise_fonction">
+                                <label for="wp2_ai">{{ 'app.create_entreprise.wp2_ai'|trans }}</label>
+                                <input type="text" id="wp2_ai" name="wp2_ai">
                             </div>
                         </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp2_green">{{ 'app.create_entreprise.wp2_green'|trans }}</label>
+                                <input type="text" id="wp2_green" name="wp2_green">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp2_score_dma1">{{ 'app.create_entreprise.wp2_score_dma1'|trans }}</label>
+                                <input type="text" id="wp2_score_dma1" name="wp2_score_dma1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                        <div class="form-group form-row full">
-                            <label for="notes_representant">{{ 'app.create_entreprise.notes'|trans }}</label>
-                            <textarea id="notes_representant" name="notes_representant"></textarea>
+            <!-- Section WP5 - Événement -->
+            <div class="accordion-item conditional-section" data-category="wp5_event" data-create-entreprise-target="conditionalSection" style="display: none;">
+                <div class="accordion-header">
+                    <h3>
+                        <i class="fi fi-rs-calendar"></i>
+                        WP5 - {{ 'app.create_entreprise.event'|trans }}
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp5_event_year">{{ 'app.create_entreprise.wp5_year'|trans }}</label>
+                                <input type="number" id="wp5_event_year" name="wp5_event_year" min="2020" max="2100">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp5_event_passage">{{ 'app.create_entreprise.wp5_event_passage'|trans }}</label>
+                                <input type="text" id="wp5_event_passage" name="wp5_event_passage">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp5_event_responsible_wp5">{{ 'app.create_entreprise.wp5_responsible'|trans }}</label>
+                                <input type="text" id="wp5_event_responsible_wp5" name="wp5_event_responsible_wp5">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp5_event_responsible_wp4">{{ 'app.create_entreprise.wp5_responsible_wp4'|trans }}</label>
+                                <input type="text" id="wp5_event_responsible_wp4" name="wp5_event_responsible_wp4">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp5_event_need_wp5">{{ 'app.create_entreprise.wp5_need'|trans }}</label>
+                                <input type="text" id="wp5_event_need_wp5" name="wp5_event_need_wp5">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp5_event_action_wp5">{{ 'app.create_entreprise.wp5_action'|trans }}</label>
+                                <input type="text" id="wp5_event_action_wp5" name="wp5_event_action_wp5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section WP5 - Formation -->
+            <div class="accordion-item conditional-section" data-category="wp5_formation" data-create-entreprise-target="conditionalSection" style="display: none;">
+                <div class="accordion-header">
+                    <h3>
+                        <i class="fi fi-rs-graduation-cap"></i>
+                        WP5 - {{ 'app.create_entreprise.formation'|trans }}
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp5_formation_responsible">{{ 'app.create_entreprise.wp5_responsible'|trans }}</label>
+                                <input type="text" id="wp5_formation_responsible" name="wp5_formation_responsible">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp5_formation_technology">{{ 'app.create_entreprise.wp5_technology'|trans }}</label>
+                                <input type="text" id="wp5_formation_technology" name="wp5_formation_technology">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp5_formation_service_price">{{ 'app.create_entreprise.wp5_service_price'|trans }}</label>
+                                <input type="text" id="wp5_formation_service_price" name="wp5_formation_service_price">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp5_formation_price_invoiced">{{ 'app.create_entreprise.wp5_price_invoiced'|trans }}</label>
+                                <input type="text" id="wp5_formation_price_invoiced" name="wp5_formation_price_invoiced">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp5_formation_start_date">{{ 'app.create_entreprise.wp5_start_date'|trans }}</label>
+                                <input type="date" id="wp5_formation_start_date" name="wp5_formation_start_date">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp5_formation_finish_date">{{ 'app.create_entreprise.wp5_finish_date'|trans }}</label>
+                                <input type="date" id="wp5_formation_finish_date" name="wp5_formation_finish_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section WP6 -->
+            <div class="accordion-item conditional-section" data-category="wp6" data-create-entreprise-target="conditionalSection" style="display: none;">
+                <div class="accordion-header">
+                    <h3>
+                        <i class="fi fi-rs-briefcase"></i>
+                        WP6
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp6_responsible">{{ 'app.create_entreprise.wp6_responsible'|trans }}</label>
+                                <input type="text" id="wp6_responsible" name="wp6_responsible">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp6_technology">{{ 'app.create_entreprise.wp6_technology'|trans }}</label>
+                                <input type="text" id="wp6_technology" name="wp6_technology">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp6_service_price">{{ 'app.create_entreprise.wp6_service_price'|trans }}</label>
+                                <input type="text" id="wp6_service_price" name="wp6_service_price">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp6_price_invoiced">{{ 'app.create_entreprise.wp6_price_invoiced'|trans }}</label>
+                                <input type="text" id="wp6_price_invoiced" name="wp6_price_invoiced">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp6_start_date">{{ 'app.create_entreprise.wp6_start_date'|trans }}</label>
+                                <input type="date" id="wp6_start_date" name="wp6_start_date">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp6_finish_date">{{ 'app.create_entreprise.wp6_finish_date'|trans }}</label>
+                                <input type="date" id="wp6_finish_date" name="wp6_finish_date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section WP7 -->
+            <div class="accordion-item conditional-section" data-category="wp7" data-create-entreprise-target="conditionalSection" style="display: none;">
+                <div class="accordion-header">
+                    <h3>
+                        <i class="fi fi-rs-sack-dollar"></i>
+                        WP7
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp7_responsible">{{ 'app.create_entreprise.wp7_responsible'|trans }}</label>
+                                <input type="text" id="wp7_responsible" name="wp7_responsible">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp7_amount_trigger">{{ 'app.create_entreprise.wp7_amount_trigger'|trans }}</label>
+                                <input type="text" id="wp7_amount_trigger" name="wp7_amount_trigger">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp7_type_investment">{{ 'app.create_entreprise.wp7_type_investment'|trans }}</label>
+                                <input type="text" id="wp7_type_investment" name="wp7_type_investment">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp7_source_financing">{{ 'app.create_entreprise.wp7_source_financing'|trans }}</label>
+                                <input type="text" id="wp7_source_financing" name="wp7_source_financing">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp7_amount_obtained">{{ 'app.create_entreprise.wp7_amount_obtained'|trans }}</label>
+                                <input type="text" id="wp7_amount_obtained" name="wp7_amount_obtained">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp7_service_price">{{ 'app.create_entreprise.wp7_service_price'|trans }}</label>
+                                <input type="text" id="wp7_service_price" name="wp7_service_price">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp7_price_invoiced">{{ 'app.create_entreprise.wp7_price_invoiced'|trans }}</label>
+                                <input type="text" id="wp7_price_invoiced" name="wp7_price_invoiced">
+                            </div>
+                            <div class="form-group">
+                                <label for="wp7_start_date">{{ 'app.create_entreprise.wp7_start_date'|trans }}</label>
+                                <input type="date" id="wp7_start_date" name="wp7_start_date">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="wp7_finish_date">{{ 'app.create_entreprise.wp7_finish_date'|trans }}</label>
+                                <input type="date" id="wp7_finish_date" name="wp7_finish_date">
+                            </div>
+                            <div class="form-group">
+                                <!-- Empty for alignment -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section Mise en relation -->
+            <div class="accordion-item conditional-section" data-category="relation" data-create-entreprise-target="conditionalSection" style="display: none;">
+                <div class="accordion-header">
+                    <h3>
+                        <i class="fi fi-rs-users"></i>
+                        {{ 'app.create_entreprise.relation'|trans }}
+                    </h3>
+                    <span class="accordion-icon">
+                        <i class="fi fi-rs-angle-down"></i>
+                    </span>
+                </div>
+                <div class="accordion-content">
+                    <div class="accordion-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="relation_responsible">{{ 'app.create_entreprise.relation_responsible'|trans }}</label>
+                                <input type="text" id="relation_responsible" name="relation_responsible">
+                            </div>
+                            <div class="form-group">
+                                <label for="relation_technology">{{ 'app.create_entreprise.relation_technology'|trans }}</label>
+                                <input type="text" id="relation_technology" name="relation_technology">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="relation_service_price">{{ 'app.create_entreprise.relation_service_price'|trans }}</label>
+                                <input type="text" id="relation_service_price" name="relation_service_price">
+                            </div>
+                            <div class="form-group">
+                                <label for="relation_price_invoiced">{{ 'app.create_entreprise.relation_price_invoiced'|trans }}</label>
+                                <input type="text" id="relation_price_invoiced" name="relation_price_invoiced">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="relation_start_date">{{ 'app.create_entreprise.relation_start_date'|trans }}</label>
+                                <input type="date" id="relation_start_date" name="relation_start_date">
+                            </div>
+                            <div class="form-group">
+                                <label for="relation_finish_date">{{ 'app.create_entreprise.relation_finish_date'|trans }}</label>
+                                <input type="date" id="relation_finish_date" name="relation_finish_date">
+                            </div>
                         </div>
                     </div>
                 </div>

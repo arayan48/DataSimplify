@@ -15,7 +15,10 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class AdminController extends AbstractController
 {
-    #[Route('/administrateur/dashboard', name: 'app_admin_dashboard')]
+    #[Route(path: [
+        'fr' => '/administrateur/tableau-de-bord',
+        'en' => '/administrator/dashboard'
+    ], name: 'app_admin_dashboard')]
     public function index(): Response
     {
         return $this->render('admin/index.html.twig', [
@@ -24,7 +27,10 @@ final class AdminController extends AbstractController
         ]);
     }
 
-    #[Route('/administrateur/users', name: 'app_admin_users')]
+    #[Route(path: [
+        'fr' => '/administrateur/utilisateurs',
+        'en' => '/administrator/users'
+    ], name: 'app_admin_users')]
     public function manageUsers(UserRepository $userRepository, PartenaireJsonService $partenaireService): Response
     {
         $users = $userRepository->findAll();
@@ -154,7 +160,10 @@ final class AdminController extends AbstractController
         return new JsonResponse(['success' => true, 'message' => 'Utilisateur créé']);
     }
 
-    #[Route('/administrateur/partenaire', name: 'app_admin_partenaire')]
+    #[Route(path: [
+        'fr' => '/administrateur/partenaire',
+        'en' => '/administrator/partner'
+    ], name: 'app_admin_partenaire')]
     public function managePartenaire(PartenaireJsonService $partenaireService, UserRepository $userRepository): Response
     {
         $partenaires = $partenaireService->findAll();

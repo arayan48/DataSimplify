@@ -1,22 +1,37 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
+    static targets = ["categoryCheckbox", "conditionalSection", "countrySelector", "countryInput", "countryDropdown", "countrySearch", "countryList"];
+
     connect() {
         console.log('CreateEntreprise loaded');
-        this.requiredFields = {
-            0: ['nom', 'siret', 'secteur', 'ville', 'codepostal', 'pays', 'adresse'],
-            1: ['telephone', 'email'],
-            2: ['prenom_representant', 'nom_representant', 'poste_representant', 'email_representant']
-        };
-        
         this.setupAccordionListeners();
         this.initializeAccordionStates();
-        this.setupFormTracking();
-        this.setupProgressBar();
+        this.setupCategoryCheckboxes();
+        this.setupCountrySelector();
+        
+        // Fermer le dropdown quand on clique ailleurs
+        document.addEventListener('click', (e) => {
+            if (this.hasCountrySelectorTarget) {
+                if (!this.countrySelectorTarget.contains(e.target)) {
+                    this.closeCountryDropdown();
+                }
+            }
+        });
+
+        // Repositionner le dropdown lors du scroll
+        window.addEventListener('scroll', () => {
+            this.updateCountryDropdownPosition();
+        }, true);
+
+        // Repositionner le dropdown lors du resize
+        window.addEventListener('resize', () => {
+            this.updateCountryDropdownPosition();
+        });
     }
 
     initializeAccordionStates() {
-        const items = this.element.querySelectorAll('.accordion-item');
+        const items = this.element.querySelectorAll('.accordion-item:not(.conditional-section)');
         items.forEach((item, index) => {
             const header = item.querySelector('.accordion-header');
             if (header) {
@@ -24,8 +39,6 @@ export default class extends Controller {
                 if (index === 0) {
                     header.classList.add('active');
                     header.nextElementSibling?.classList.add('active');
-                } else {
-                    header.classList.add('disabled');
                 }
             }
         });
@@ -35,9 +48,7 @@ export default class extends Controller {
         const headers = this.element.querySelectorAll('.accordion-header');
         headers.forEach(header => {
             header.addEventListener('click', (e) => {
-                if (!header.classList.contains('disabled')) {
-                    this.toggleAccordion(header);
-                }
+                this.toggleAccordion(header);
             });
         });
     }
@@ -46,120 +57,137 @@ export default class extends Controller {
         const content = header.nextElementSibling;
         if (!content) return;
         
-        // Fermer tous les autres accordéons
-        this.element.querySelectorAll('.accordion-header').forEach(h => {
-            if (h !== header && h.classList.contains('active')) {
-                h.classList.remove('active');
-                const nextEl = h.nextElementSibling;
-                if (nextEl) nextEl.classList.remove('active');
-            }
-        });
+        const isActive = header.classList.contains('active');
         
-        // Ouvrir le nouvel accordéon
-        header.classList.add('active');
-        content.classList.add('active');
+        if (isActive) {
+            header.classList.remove('active');
+            content.classList.remove('active');
+        } else {
+            header.classList.add('active');
+            content.classList.add('active');
+        }
         
-        // Scroll vers la section
-        setTimeout(() => {
-            header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }, 100);
+        // Scroll vers la section si elle s'ouvre
+        if (!isActive) {
+            setTimeout(() => {
+                header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+        }
     }
 
-    setupFormTracking() {
-        const form = this.element.querySelector('.create-entreprise-form');
-        if (!form) return;
-        
-        const inputs = form.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
-            input.addEventListener('change', () => {
-                this.updateProgressBar();
+    setupCategoryCheckboxes() {
+        this.categoryCheckboxTargets.forEach(checkbox => {
+            checkbox.addEventListener('change', () => {
+                this.toggleConditionalSections();
             });
         });
     }
 
-    setupProgressBar() {
-        const container = this.element;
-        const existingBar = container.querySelector('.progress-container');
-        if (existingBar) {
-            existingBar.remove();
-        }
-        
-        const progressContainer = document.createElement('div');
-        progressContainer.className = 'progress-container';
-        progressContainer.innerHTML = `
-            <div class="progress-bar">
-                <div class="progress-fill"></div>
-            </div>
-            <div class="progress-text">
-                <span class="progress-current">0</span>/<span class="progress-total">3</span> sections complétées
-            </div>
-        `;
-        
-        const header = container.querySelector('.create-entreprise-header');
-        if (header && header.nextElementSibling) {
-            header.parentNode.insertBefore(progressContainer, header.nextElementSibling);
-        }
-        
-        this.updateProgressBar();
-    }
+    toggleConditionalSections() {
+        const checkedCategories = this.categoryCheckboxTargets
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
 
-    validateSection(sectionIndex) {
-        const requiredFields = this.requiredFields[sectionIndex] || [];
-        if (requiredFields.length === 0) return true;
-        
-        const form = this.element.querySelector('.create-entreprise-form');
-        if (!form) return false;
-        
-        let allFilled = true;
-        requiredFields.forEach(fieldName => {
-            const field = form.querySelector(`[name="${fieldName}"]`);
-            if (!field || !field.value.trim()) {
-                allFilled = false;
-            }
-        });
-        
-        return allFilled;
-    }
-
-    updateProgressBar() {
-        const progressFill = this.element.querySelector('.progress-fill');
-        const progressCurrent = this.element.querySelector('.progress-current');
-        const items = this.element.querySelectorAll('.accordion-item');
-        
-        let completedSections = 0;
-        let totalSections = items.length;
-        
-        items.forEach((item, index) => {
-            const header = item.querySelector('.accordion-header');
-            if (!header) return;
+        this.conditionalSectionTargets.forEach(section => {
+            const category = section.dataset.category;
             
-            if (this.validateSection(index)) {
-                completedSections++;
-                header.classList.add('completed');
-                this.unlockNextSection(index);
+            if (checkedCategories.includes(category)) {
+                section.style.display = '';
             } else {
-                header.classList.remove('completed');
+                section.style.display = 'none';
+                // Fermer l'accordéon s'il était ouvert
+                const header = section.querySelector('.accordion-header');
+                const content = section.querySelector('.accordion-content');
+                if (header && content) {
+                    header.classList.remove('active');
+                    content.classList.remove('active');
+                }
             }
         });
+    }
+
+    setupCountrySelector() {
+        if (!this.hasCountryListTarget) return;
         
-        const progressPercent = totalSections > 0 ? (completedSections / totalSections) * 100 : 0;
-        if (progressFill) {
-            progressFill.style.width = progressPercent + '%';
-        }
-        if (progressCurrent) {
-            progressCurrent.textContent = completedSections;
+        const countryItems = this.countryListTarget.querySelectorAll('.country-item');
+        countryItems.forEach(item => {
+            item.addEventListener('click', () => {
+                this.selectCountry(item.dataset.country);
+            });
+        });
+    }
+
+    toggleCountryDropdown(event) {
+        event.stopPropagation();
+        const isVisible = this.countryDropdownTarget.style.display === 'flex';
+        
+        if (isVisible) {
+            this.closeCountryDropdown();
+        } else {
+            this.openCountryDropdown();
         }
     }
 
-    unlockNextSection(currentIndex) {
-        const nextIndex = currentIndex + 1;
-        const items = this.element.querySelectorAll('.accordion-item');
+    openCountryDropdown() {
+        this.countryDropdownTarget.style.display = 'flex';
+        this.updateCountryDropdownPosition();
         
-        if (nextIndex < items.length) {
-            const nextHeader = items[nextIndex].querySelector('.accordion-header');
-            if (nextHeader && this.validateSection(currentIndex)) {
-                nextHeader.classList.remove('disabled');
-            }
+        if (this.hasCountrySearchTarget) {
+            this.countrySearchTarget.value = '';
+            setTimeout(() => {
+                this.countrySearchTarget.focus();
+            }, 50);
+            this.filterCountries();
         }
+    }
+
+    updateCountryDropdownPosition() {
+        if (!this.hasCountryDropdownTarget || this.countryDropdownTarget.style.display !== 'flex') {
+            return;
+        }
+
+        // Positionner le dropdown par rapport à l'input
+        const inputRect = this.countryInputTarget.getBoundingClientRect();
+        this.countryDropdownTarget.style.top = `${inputRect.bottom + 4}px`;
+        this.countryDropdownTarget.style.left = `${inputRect.left}px`;
+        this.countryDropdownTarget.style.width = `${inputRect.width}px`;
+    }
+
+    closeCountryDropdown() {
+        if (this.hasCountryDropdownTarget) {
+            this.countryDropdownTarget.style.display = 'none';
+        }
+    }
+
+    selectCountry(countryName) {
+        this.countryInputTarget.value = countryName;
+        this.closeCountryDropdown();
+    }
+
+    filterCountries() {
+        const searchTerm = this.countrySearchTarget.value.toLowerCase();
+        const categories = this.countryListTarget.querySelectorAll('.country-category');
+        
+        categories.forEach(category => {
+            const items = category.querySelectorAll('.country-item');
+            let hasVisibleItems = false;
+            
+            items.forEach(item => {
+                const countryName = item.dataset.country.toLowerCase();
+                if (countryName.includes(searchTerm)) {
+                    item.style.display = '';
+                    hasVisibleItems = true;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+            
+            // Afficher/masquer la catégorie selon si elle a des items visibles
+            if (hasVisibleItems) {
+                category.style.display = '';
+            } else {
+                category.style.display = 'none';
+            }
+        });
     }
 }
