@@ -159,15 +159,23 @@ class PartenaireJsonService
     {
         $partenaires = $this->findAll();
         $initialCount = count($partenaires);
+        
+        error_log('PartenaireJsonService::deleteMultiple - IDs à supprimer: ' . json_encode($ids));
+        error_log('PartenaireJsonService::deleteMultiple - Partenaires avant: ' . json_encode(array_column($partenaires, 'id')));
 
         $partenaires = array_filter($partenaires, function($partenaire) use ($ids) {
-            return !in_array($partenaire['id'], $ids);
+            $shouldKeep = !in_array($partenaire['id'], $ids, true);
+            error_log('Partenaire ID: ' . $partenaire['id'] . ' - Type: ' . gettype($partenaire['id']) . ' - Garder: ' . ($shouldKeep ? 'oui' : 'non'));
+            return $shouldKeep;
         });
+        
+        error_log('PartenaireJsonService::deleteMultiple - Partenaires après: ' . json_encode(array_column($partenaires, 'id')));
 
         $deletedCount = $initialCount - count($partenaires);
         
         if ($deletedCount > 0) {
             $this->save(array_values($partenaires));
+            error_log('PartenaireJsonService::deleteMultiple - Fichier JSON sauvegardé');
         }
 
         return $deletedCount;

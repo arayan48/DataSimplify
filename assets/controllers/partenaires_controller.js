@@ -415,7 +415,7 @@ export default class extends Controller {
     async deleteSelected() {
         const selectedIds = this.checkboxTargets
             .filter(cb => cb.checked)
-            .map(cb => parseInt(cb.value));
+            .map(cb => cb.value);
 
         if (selectedIds.length === 0) return;
 
@@ -429,17 +429,28 @@ export default class extends Controller {
     async executeDeleteMultiple() {
         if (!this.selectedIdsToDelete || this.selectedIdsToDelete.length === 0) return;
 
+        console.log('executeDeleteMultiple - IDs à supprimer:', this.selectedIdsToDelete);
+        console.log('Type des IDs:', this.selectedIdsToDelete.map(id => typeof id));
+
         try {
             window.showLoader();
-            const response = await fetch(this.getLocalizedUrl('/administrateur/partenaires/delete'), {
+            const url = this.getLocalizedUrl('/administrateur/partenaires/delete');
+            console.log('URL de suppression:', url);
+            
+            const body = { ids: this.selectedIdsToDelete, _token: this.csrfTokenValue };
+            console.log('Body envoyé:', JSON.stringify(body));
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ids: this.selectedIdsToDelete, _token: this.csrfTokenValue })
+                body: JSON.stringify(body)
             });
 
+            console.log('Status de la réponse:', response.status);
             const result = await response.json();
+            console.log('Résultat:', result);
             window.hideLoader();
 
             if (result.success) {

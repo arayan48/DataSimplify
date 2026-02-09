@@ -338,7 +338,15 @@ final class AdminController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Aucun partenaire sélectionné'], 400);
         }
 
+        // Convertir les IDs en strings pour correspondre au format JSON
+        $partenaireIds = array_map('strval', $partenaireIds);
+        
+        // Log pour déboguer
+        error_log('Tentative de suppression des partenaires: ' . json_encode($partenaireIds));
+        
         $count = $partenaireService->deleteMultiple($partenaireIds);
+        
+        error_log('Nombre de partenaires supprimés: ' . $count);
 
         return new JsonResponse(['success' => true, 'message' => "$count partenaire(s) supprimé(s)"]);
     }
