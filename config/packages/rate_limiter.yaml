@@ -1,0 +1,19 @@
+framework:
+    rate_limiter:
+        # Rate limiter for login attempts
+        login_limiter:
+            policy: 'sliding_window'
+            limit: 5
+            interval: '15 minutes'
+        
+        # Rate limiter for API endpoints
+        api_limiter:
+            policy: 'sliding_window'
+            limit: 100
+            interval: '1 minute'
+        
+        # Strict limiter for password reset
+        password_reset_limiter:
+            policy: 'fixed_window'
+            limit: 3
+            interval: '1 hour'

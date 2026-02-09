@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Form\RegistrationFormType;
+use App\Service\LogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +19,7 @@ class RegistrationController extends AbstractController
         'fr' => '/inscription',
         'en' => '/register'
     ], name: 'app_register')]
-    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager): Response
+    public function register(Request $request, UserPasswordHasherInterface $userPasswordHasher, EntityManagerInterface $entityManager, LogService $logService): Response
     {
         // Page d'inscription désactivée
         throw new AccessDeniedHttpException('Cette page n\'est pas accessible.');
@@ -36,6 +37,9 @@ class RegistrationController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->flush();
+
+            // Log l'action
+            $logService->logUserCreated($user->getId(), $user->getEmail(), $user->getRoles());
 
             // do anything else you need here, like send an email
 

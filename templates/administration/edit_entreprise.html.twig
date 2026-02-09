@@ -1,0 +1,1032 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'app.edit_entreprise.page_title'|trans({'%name%': entreprise.nom}) }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    /* ========== BASE STYLES ========== */
+    .edit-container {
+        max-width: 1000px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    /* Header */
+    .edit-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .edit-header h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .edit-header .subtitle {
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-top: 0.25rem;
+    }
+
+    .btn-back {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        color: #374151;
+        background: #f9fafb;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+
+    .btn-back:hover {
+        background: #f3f4f6;
+        border-color: #9ca3af;
+    }
+
+    /* Alerts */
+    .alert {
+        padding: 0.875rem 1rem;
+        border-radius: 6px;
+        margin-bottom: 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .alert-success {
+        background: #f0fdf4;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .alert-error {
+        background: #fef2f2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    /* Status Card */
+    .status-card {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem 1.25rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .status-card.status-ok {
+        background: #f0fdf4;
+        border: 1px solid #86efac;
+    }
+
+    .status-card.status-warning {
+        background: #fffbeb;
+        border: 1px solid #fcd34d;
+    }
+
+    .status-card.status-error {
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+    }
+
+    .status-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+    }
+
+    .status-ok .status-icon { background: #dcfce7; color: #16a34a; }
+    .status-warning .status-icon { background: #fef3c7; color: #d97706; }
+    .status-error .status-icon { background: #fee2e2; color: #dc2626; }
+
+    .status-info h3 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .status-info p {
+        font-size: 0.8125rem;
+        color: #6b7280;
+        margin: 0;
+    }
+
+    /* Section */
+    .section {
+        background: #fff;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .section-header:hover {
+        background: #f9fafb;
+    }
+
+    .section-header h2 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-header .count {
+        font-size: 0.75rem;
+        padding: 0.125rem 0.5rem;
+        background: #f3f4f6;
+        color: #6b7280;
+        border-radius: 9999px;
+    }
+
+    .section-header svg {
+        width: 20px;
+        height: 20px;
+        color: #9ca3af;
+        transition: transform 0.2s;
+    }
+
+    .section.open .section-header svg {
+        transform: rotate(180deg);
+    }
+
+    .section-body {
+        padding: 1.25rem;
+        display: none;
+    }
+
+    .section.open .section-body {
+        display: block;
+    }
+
+    /* Form Styles */
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    .form-grid.cols-1 {
+        grid-template-columns: 1fr;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .form-group label {
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: #374151;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.875rem;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        background: #fff;
+        color: #111827;
+        transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        margin-top: 1.25rem;
+        padding-top: 1rem;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    /* Buttons */
+    .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0.5rem 1rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s;
+        border: none;
+    }
+
+    .btn-primary {
+        background: #2563eb;
+        color: #fff;
+    }
+
+    .btn-primary:hover {
+        background: #1d4ed8;
+    }
+
+    .btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+
+    .btn-secondary:hover {
+        background: #e5e7eb;
+    }
+
+    .btn-danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn-danger:hover {
+        background: #fecaca;
+    }
+
+    .btn-add {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px dashed #d1d5db;
+        background: #f9fafb;
+        color: #6b7280;
+        font-weight: 500;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+
+    .btn-add:hover {
+        border-color: #3b82f6;
+        color: #3b82f6;
+        background: #eff6ff;
+    }
+
+    /* WP Item */
+    .wp-item {
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        margin-bottom: 0.75rem;
+    }
+
+    .wp-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .wp-item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.875rem 1rem;
+        background: #f9fafb;
+        border-radius: 6px 6px 0 0;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .wp-item-title {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #111827;
+    }
+
+    .wp-item-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .wp-item-actions button {
+        width: 28px;
+        height: 28px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+    }
+
+    .wp-item-actions .btn-edit {
+        background: #f3f4f6;
+        color: #6b7280;
+    }
+
+    .wp-item-actions .btn-edit:hover {
+        background: #e5e7eb;
+        color: #374151;
+    }
+
+    .wp-item-actions .btn-delete {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .wp-item-actions .btn-delete:hover {
+        background: #fecaca;
+    }
+
+    .wp-item-body {
+        padding: 1rem;
+    }
+
+    .wp-item-preview {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem 1rem;
+        font-size: 0.8125rem;
+    }
+
+    .wp-item-preview dt {
+        color: #6b7280;
+    }
+
+    .wp-item-preview dd {
+        color: #111827;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    .wp-item-form {
+        display: none;
+    }
+
+    .wp-item.editing .wp-item-preview {
+        display: none;
+    }
+
+    .wp-item.editing .wp-item-form {
+        display: block;
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #6b7280;
+        font-size: 0.875rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+        .edit-container {
+            padding: 1rem;
+        }
+
+        .edit-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .form-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .wp-item-preview {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="edit-container" data-controller="edit-entreprise" data-entreprise-id="{{ entreprise.id }}">
+    
+    {# Header #}
+    <div class="edit-header">
+        <div>
+            <h1>{{ entreprise.nom }}</h1>
+            <p class="subtitle">{{ 'app.edit_entreprise.subtitle'|trans }}</p>
+        </div>
+        <a href="{{ path('app_administration_dashboard') }}" class="btn-back" data-turbo="false">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            {{ 'app.edit_entreprise.back'|trans }}
+        </a>
+    </div>
+
+    {# Flash Messages #}
+    {% for message in app.flashes('success') %}
+        <div class="alert alert-success">✓ {{ message }}</div>
+    {% endfor %}
+    {% for message in app.flashes('error') %}
+        <div class="alert alert-error">✗ {{ message }}</div>
+    {% endfor %}
+
+    {# Status Card #}
+    {% set totalWp = (entreprise.wp2 ? 1 : 0) + entreprise.wp5Events|length + entreprise.wp5Formations|length + entreprise.wp6|length + entreprise.wp7|length + entreprise.miseEnRelations|length %}
+    {% set statusClass = totalWp == 0 ? 'status-error' : (totalWp < 3 ? 'status-warning' : 'status-ok') %}
+    
+    <div class="status-card {{ statusClass }}">
+        <div class="status-icon">
+            {% if totalWp == 0 %}✗{% elseif totalWp < 3 %}!{% else %}✓{% endif %}
+        </div>
+        <div class="status-info">
+            <h3>{% if totalWp == 0 %}{{ 'app.edit_entreprise.no_wp'|trans }}{% elseif totalWp < 3 %}{{ 'app.edit_entreprise.wp_count'|trans({'%count%': totalWp}) }}{% else %}{{ 'app.edit_entreprise.wp_count_plural'|trans({'%count%': totalWp}) }}{% endif %}</h3>
+            <p>{% if totalWp == 0 %}{{ 'app.edit_entreprise.add_wp_hint'|trans }}{% else %}WP2: {{ entreprise.wp2 ? '1' : '0' }} | WP5: {{ entreprise.wp5Events|length + entreprise.wp5Formations|length }} | WP6: {{ entreprise.wp6|length }} | WP7: {{ entreprise.wp7|length }} | {{ 'app.edit_entreprise.relations'|trans }}: {{ entreprise.miseEnRelations|length }}{% endif %}</p>
+        </div>
+    </div>
+
+    {# Section: Informations générales #}
+    <div class="section open">
+        <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+            <h2>{{ 'app.edit_entreprise.general_info'|trans }}</h2>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="section-body">
+            <form method="POST">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="update_entreprise">
+                
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.company_name'|trans }} *</label>
+                        <input type="text" name="nom" value="{{ entreprise.nom }}" required>
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.siret'|trans }}</label>
+                        <input type="text" name="siret" value="{{ entreprise.siret }}">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.structure_type'|trans }}</label>
+                        <input type="text" name="type_structure" value="{{ entreprise.typeStructure }}">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.creation_year'|trans }}</label>
+                        <input type="number" name="annee_creation" value="{{ entreprise.anneeCreation }}">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.sector'|trans }}</label>
+                        <input type="text" name="secteur" value="{{ entreprise.secteur }}">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.size'|trans }}</label>
+                        <input type="text" name="taille" value="{{ entreprise.taille }}">
+                    </div>
+                </div>
+
+                <div class="form-grid cols-1" style="margin-top: 1rem;">
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.description'|trans }}</label>
+                        <textarea name="description" rows="3">{{ entreprise.description }}</textarea>
+                    </div>
+                </div>
+
+                <div class="form-grid" style="margin-top: 1rem;">
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.address'|trans }}</label>
+                        <input type="text" name="adresse" value="{{ entreprise.adresse }}">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.postal_code'|trans }}</label>
+                        <input type="text" name="codepostal" value="{{ entreprise.codePostal }}">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.city'|trans }}</label>
+                        <input type="text" name="ville" value="{{ entreprise.ville }}">
+                    </div>
+                    <div class="form-group">
+                        <label>{{ 'app.edit_entreprise.country'|trans }}</label>
+                        <input type="text" name="pays" value="{{ entreprise.pays }}">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.save'|trans }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {# Section: WP2 - DMAO #}
+    <div class="section {% if entreprise.wp2 %}open{% endif %}">
+        <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+            <h2>{{ 'app.edit_entreprise.wp2_dmao'|trans }} <span class="count">{{ entreprise.wp2 ? '1' : '0' }}</span></h2>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="section-body">
+            {% if entreprise.wp2 %}
+            <div class="wp-item" id="wp2-item">
+                <div class="wp-item-header">
+                    <span class="wp-item-title">{{ 'app.edit_entreprise.dmao_diagnostic'|trans }}</span>
+                    <div class="wp-item-actions">
+                        <button type="button" class="btn-edit" onclick="document.getElementById('wp2-item').classList.toggle('editing')">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                        <button type="button" class="btn-delete" onclick="if(confirm('{{ 'app.edit_entreprise.confirm_delete_wp2'|trans }}')) document.getElementById('delete-wp2-form').submit()">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="wp-item-body">
+                    <dl class="wp-item-preview">
+                        <dt>{{ 'app.edit_entreprise.score_dmao'|trans }}</dt><dd>{{ entreprise.wp2.scoreDmao|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.score_dma1'|trans }}</dt><dd>{{ entreprise.wp2.scoreDma1|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.digital_strategy'|trans }}</dt><dd>{{ entreprise.wp2.digitalStrategy|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.digital_readiness'|trans }}</dt><dd>{{ entreprise.wp2.digitalReadiness|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.human_centric'|trans }}</dt><dd>{{ entreprise.wp2.humanCentric|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.data_governance'|trans }}</dt><dd>{{ entreprise.wp2.dataGovernance|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.ai'|trans }}</dt><dd>{{ entreprise.wp2.ai|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.green'|trans }}</dt><dd>{{ entreprise.wp2.green|default('—') }}</dd>
+                    </dl>
+                    <div class="wp-item-form">
+                        <form method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                            <input type="hidden" name="action" value="update_wp">
+                            <input type="hidden" name="wp_type" value="wp2">
+                            <input type="hidden" name="wp_id" value="{{ entreprise.wp2.id }}">
+                            <div class="form-grid">
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.score_dmao'|trans }}</label><input type="text" name="score_dmao" value="{{ entreprise.wp2.scoreDmao }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.score_dma1'|trans }}</label><input type="text" name="score_dma1" value="{{ entreprise.wp2.scoreDma1 }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.digital_strategy'|trans }}</label><input type="text" name="digital_strategy" value="{{ entreprise.wp2.digitalStrategy }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.digital_readiness'|trans }}</label><input type="text" name="digital_readiness" value="{{ entreprise.wp2.digitalReadiness }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.human_centric'|trans }}</label><input type="text" name="human_centric" value="{{ entreprise.wp2.humanCentric }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.data_governance'|trans }}</label><input type="text" name="data_governance" value="{{ entreprise.wp2.dataGovernance }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.ai'|trans }}</label><input type="text" name="ai" value="{{ entreprise.wp2.ai }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.green'|trans }}</label><input type="text" name="green" value="{{ entreprise.wp2.green }}"></div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('wp2-item').classList.remove('editing')">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                                <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.save'|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <form id="delete-wp2-form" method="POST" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="delete_wp">
+                <input type="hidden" name="wp_type" value="wp2">
+                <input type="hidden" name="wp_id" value="{{ entreprise.wp2.id }}">
+            </form>
+            {% else %}
+            <form method="POST" id="add-wp2-form" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="create_wp">
+                <input type="hidden" name="wp_type" value="wp2">
+                <div class="form-grid">
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.score_dmao'|trans }}</label><input type="text" name="score_dmao"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.score_dma1'|trans }}</label><input type="text" name="score_dma1"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.digital_strategy'|trans }}</label><input type="text" name="digital_strategy"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.digital_readiness'|trans }}</label><input type="text" name="digital_readiness"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.human_centric'|trans }}</label><input type="text" name="human_centric"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.data_governance'|trans }}</label><input type="text" name="data_governance"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.ai'|trans }}</label><input type="text" name="ai"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.green'|trans }}</label><input type="text" name="green"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-wp2-form').style.display='none'; document.getElementById('add-wp2-btn').style.display='';">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.create'|trans }}</button>
+                </div>
+            </form>
+            <button type="button" class="btn-add" id="add-wp2-btn" onclick="document.getElementById('add-wp2-form').style.display='block'; this.style.display='none';">
+                {{ 'app.edit_entreprise.add_wp2'|trans }}
+            </button>
+            {% endif %}
+        </div>
+    </div>
+
+    {# Section: WP5 - Événements #}
+    <div class="section {% if entreprise.wp5Events|length > 0 %}open{% endif %}">
+        <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+            <h2>{{ 'app.edit_entreprise.wp5_events'|trans }} <span class="count">{{ entreprise.wp5Events|length }}</span></h2>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="section-body">
+            {% for event in entreprise.wp5Events %}
+            <div class="wp-item" id="wp5event-{{ event.id }}">
+                <div class="wp-item-header">
+                    <span class="wp-item-title">{{ event.eventNameEnglish|default('app.edit_entreprise.default_event'|trans) }}</span>
+                    <div class="wp-item-actions">
+                        <button type="button" class="btn-edit" onclick="document.getElementById('wp5event-{{ event.id }}').classList.toggle('editing')">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                        <button type="button" class="btn-delete" onclick="if(confirm('{{ 'app.edit_entreprise.confirm_delete_event'|trans }}')) document.getElementById('delete-wp5event-{{ event.id }}-form').submit()">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="wp-item-body">
+                    <dl class="wp-item-preview">
+                        <dt>{{ 'app.edit_entreprise.event_name_en'|trans }}</dt><dd>{{ event.eventNameEnglish|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.event_name_original'|trans }}</dt><dd>{{ event.eventNameOriginal|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.start_date'|trans }}</dt><dd>{{ event.startDate ? event.startDate|date('d/m/Y') : '—' }}</dd>
+                        <dt>{{ 'app.edit_entreprise.end_date'|trans }}</dt><dd>{{ event.endDate ? event.endDate|date('d/m/Y') : '—' }}</dd>
+                        <dt>{{ 'app.edit_entreprise.participants'|trans }}</dt><dd>{{ event.attendeesNumber|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.delivery_mode'|trans }}</dt><dd>{{ event.deliveryMode|default('—') }}</dd>
+                    </dl>
+                    <div class="wp-item-form">
+                        <form method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                            <input type="hidden" name="action" value="update_wp">
+                            <input type="hidden" name="wp_type" value="wp5_event">
+                            <input type="hidden" name="wp_id" value="{{ event.id }}">
+                            <div class="form-grid">
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.event_name_en'|trans }}</label><input type="text" name="event_name_english" value="{{ event.eventNameEnglish }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.event_name_original'|trans }}</label><input type="text" name="event_name_original" value="{{ event.eventNameOriginal }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.start_date'|trans }}</label><input type="date" name="start_date" value="{{ event.startDate ? event.startDate|date('Y-m-d') : '' }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.end_date'|trans }}</label><input type="date" name="end_date" value="{{ event.endDate ? event.endDate|date('Y-m-d') : '' }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.participants'|trans }}</label><input type="number" name="attendees" value="{{ event.attendeesNumber }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.delivery_mode'|trans }}</label><input type="text" name="delivery_mode" value="{{ event.deliveryMode }}"></div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('wp5event-{{ event.id }}').classList.remove('editing')">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                                <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.save'|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <form id="delete-wp5event-{{ event.id }}-form" method="POST" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="delete_wp">
+                <input type="hidden" name="wp_type" value="wp5_event">
+                <input type="hidden" name="wp_id" value="{{ event.id }}">
+            </form>
+            {% endfor %}
+
+            <form method="POST" id="add-wp5event-form" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="create_wp">
+                <input type="hidden" name="wp_type" value="wp5_event">
+                <div class="form-grid">
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.event_name_en'|trans }} *</label><input type="text" name="event_name_english" required></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.event_name_original'|trans }}</label><input type="text" name="event_name_original"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.start_date'|trans }}</label><input type="date" name="start_date"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.end_date'|trans }}</label><input type="date" name="end_date"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.participants'|trans }}</label><input type="number" name="attendees"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.delivery_mode'|trans }}</label><input type="text" name="delivery_mode"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-wp5event-form').style.display='none'; document.getElementById('add-wp5event-btn').style.display='';">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.create'|trans }}</button>
+                </div>
+            </form>
+            <button type="button" class="btn-add" id="add-wp5event-btn" onclick="document.getElementById('add-wp5event-form').style.display='block'; this.style.display='none';">
+                {{ 'app.edit_entreprise.add_event'|trans }}
+            </button>
+        </div>
+    </div>
+
+    {# Section: WP5 - Formations #}
+    <div class="section {% if entreprise.wp5Formations|length > 0 %}open{% endif %}">
+        <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+            <h2>{{ 'app.edit_entreprise.wp5_formations'|trans }} <span class="count">{{ entreprise.wp5Formations|length }}</span></h2>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="section-body">
+            {% for formation in entreprise.wp5Formations %}
+            <div class="wp-item" id="wp5formation-{{ formation.id }}">
+                <div class="wp-item-header">
+                    <span class="wp-item-title">{{ formation.technology|default('app.edit_entreprise.default_formation'|trans) }}</span>
+                    <div class="wp-item-actions">
+                        <button type="button" class="btn-edit" onclick="document.getElementById('wp5formation-{{ formation.id }}').classList.toggle('editing')">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                        <button type="button" class="btn-delete" onclick="if(confirm('{{ 'app.edit_entreprise.confirm_delete_formation'|trans }}')) document.getElementById('delete-wp5formation-{{ formation.id }}-form').submit()">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="wp-item-body">
+                    <dl class="wp-item-preview">
+                        <dt>{{ 'app.edit_entreprise.technology'|trans }}</dt><dd>{{ formation.technology|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.responsible'|trans }}</dt><dd>{{ formation.responsible|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.service_price'|trans }}</dt><dd>{{ formation.servicePrice|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.price_invoiced'|trans }}</dt><dd>{{ formation.priceInvoiced|default('—') }}</dd>
+                    </dl>
+                    <div class="wp-item-form">
+                        <form method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                            <input type="hidden" name="action" value="update_wp">
+                            <input type="hidden" name="wp_type" value="wp5_formation">
+                            <input type="hidden" name="wp_id" value="{{ formation.id }}">
+                            <div class="form-grid">
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.technology'|trans }}</label><input type="text" name="technology" value="{{ formation.technology }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible" value="{{ formation.responsible }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price" value="{{ formation.servicePrice }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.price_invoiced'|trans }}</label><input type="text" name="price_invoiced" value="{{ formation.priceInvoiced }}"></div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('wp5formation-{{ formation.id }}').classList.remove('editing')">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                                <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.save'|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <form id="delete-wp5formation-{{ formation.id }}-form" method="POST" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="delete_wp">
+                <input type="hidden" name="wp_type" value="wp5_formation">
+                <input type="hidden" name="wp_id" value="{{ formation.id }}">
+            </form>
+            {% endfor %}
+
+            <form method="POST" id="add-wp5formation-form" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="create_wp">
+                <input type="hidden" name="wp_type" value="wp5_formation">
+                <div class="form-grid">
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.technology'|trans }} *</label><input type="text" name="technology" required></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.price_invoiced'|trans }}</label><input type="text" name="price_invoiced"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-wp5formation-form').style.display='none'; document.getElementById('add-wp5formation-btn').style.display='';">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.create'|trans }}</button>
+                </div>
+            </form>
+            <button type="button" class="btn-add" id="add-wp5formation-btn" onclick="document.getElementById('add-wp5formation-form').style.display='block'; this.style.display='none';">
+                {{ 'app.edit_entreprise.add_formation'|trans }}
+            </button>
+        </div>
+    </div>
+
+    {# Section: WP6 - Projets #}
+    <div class="section {% if entreprise.wp6|length > 0 %}open{% endif %}">
+        <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+            <h2>{{ 'app.edit_entreprise.wp6_projects'|trans }} <span class="count">{{ entreprise.wp6|length }}</span></h2>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="section-body">
+            {% for project in entreprise.wp6 %}
+            <div class="wp-item" id="wp6-{{ project.id }}">
+                <div class="wp-item-header">
+                    <span class="wp-item-title">{{ project.technology|default('app.edit_entreprise.default_project'|trans) }}</span>
+                    <div class="wp-item-actions">
+                        <button type="button" class="btn-edit" onclick="document.getElementById('wp6-{{ project.id }}').classList.toggle('editing')">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                        <button type="button" class="btn-delete" onclick="if(confirm('{{ 'app.edit_entreprise.confirm_delete_project'|trans }}')) document.getElementById('delete-wp6-{{ project.id }}-form').submit()">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="wp-item-body">
+                    <dl class="wp-item-preview">
+                        <dt>{{ 'app.edit_entreprise.technology'|trans }}</dt><dd>{{ project.technology|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.responsible'|trans }}</dt><dd>{{ project.responsible|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.service_price'|trans }}</dt><dd>{{ project.servicePrice|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.price_invoiced'|trans }}</dt><dd>{{ project.priceInvoiced|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.start_date'|trans }}</dt><dd>{{ project.startDate ? project.startDate|date('d/m/Y') : '—' }}</dd>
+                        <dt>{{ 'app.edit_entreprise.end_date'|trans }}</dt><dd>{{ project.finishDate ? project.finishDate|date('d/m/Y') : '—' }}</dd>
+                    </dl>
+                    <div class="wp-item-form">
+                        <form method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                            <input type="hidden" name="action" value="update_wp">
+                            <input type="hidden" name="wp_type" value="wp6">
+                            <input type="hidden" name="wp_id" value="{{ project.id }}">
+                            <div class="form-grid">
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.technology'|trans }}</label><input type="text" name="technology" value="{{ project.technology }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible" value="{{ project.responsible }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price" value="{{ project.servicePrice }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.price_invoiced'|trans }}</label><input type="text" name="price_invoiced" value="{{ project.priceInvoiced }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.start_date'|trans }}</label><input type="date" name="start_date" value="{{ project.startDate ? project.startDate|date('Y-m-d') : '' }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.end_date'|trans }}</label><input type="date" name="finish_date" value="{{ project.finishDate ? project.finishDate|date('Y-m-d') : '' }}"></div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('wp6-{{ project.id }}').classList.remove('editing')">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                                <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.save'|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <form id="delete-wp6-{{ project.id }}-form" method="POST" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="delete_wp">
+                <input type="hidden" name="wp_type" value="wp6">
+                <input type="hidden" name="wp_id" value="{{ project.id }}">
+            </form>
+            {% endfor %}
+
+            <form method="POST" id="add-wp6-form" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="create_wp">
+                <input type="hidden" name="wp_type" value="wp6">
+                <div class="form-grid">
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.technology'|trans }} *</label><input type="text" name="technology" required></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.price_invoiced'|trans }}</label><input type="text" name="price_invoiced"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.start_date'|trans }}</label><input type="date" name="start_date"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.end_date'|trans }}</label><input type="date" name="finish_date"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-wp6-form').style.display='none'; document.getElementById('add-wp6-btn').style.display='';">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.create'|trans }}</button>
+                </div>
+            </form>
+            <button type="button" class="btn-add" id="add-wp6-btn" onclick="document.getElementById('add-wp6-form').style.display='block'; this.style.display='none';">
+                {{ 'app.edit_entreprise.add_project'|trans }}
+            </button>
+        </div>
+    </div>
+
+    {# Section: WP7 - Investissements #}
+    <div class="section {% if entreprise.wp7|length > 0 %}open{% endif %}">
+        <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+            <h2>{{ 'app.edit_entreprise.wp7_investments'|trans }} <span class="count">{{ entreprise.wp7|length }}</span></h2>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="section-body">
+            {% for invest in entreprise.wp7 %}
+            <div class="wp-item" id="wp7-{{ invest.id }}">
+                <div class="wp-item-header">
+                    <span class="wp-item-title">{{ invest.typeInvestment|default('app.edit_entreprise.default_investment'|trans) }}</span>
+                    <div class="wp-item-actions">
+                        <button type="button" class="btn-edit" onclick="document.getElementById('wp7-{{ invest.id }}').classList.toggle('editing')">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                        <button type="button" class="btn-delete" onclick="if(confirm('{{ 'app.edit_entreprise.confirm_delete_investment'|trans }}')) document.getElementById('delete-wp7-{{ invest.id }}-form').submit()">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="wp-item-body">
+                    <dl class="wp-item-preview">
+                        <dt>{{ 'app.edit_entreprise.type'|trans }}</dt><dd>{{ invest.typeInvestment|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.responsible'|trans }}</dt><dd>{{ invest.responsible|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.funding_source'|trans }}</dt><dd>{{ invest.sourceFinancing|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.amount_obtained'|trans }}</dt><dd>{{ invest.amountObtained|default('—') }}</dd>
+                    </dl>
+                    <div class="wp-item-form">
+                        <form method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                            <input type="hidden" name="action" value="update_wp">
+                            <input type="hidden" name="wp_type" value="wp7">
+                            <input type="hidden" name="wp_id" value="{{ invest.id }}">
+                            <div class="form-grid">
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.investment_type'|trans }}</label><input type="text" name="type_investment" value="{{ invest.typeInvestment }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible" value="{{ invest.responsible }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.funding_source'|trans }}</label><input type="text" name="source_financing" value="{{ invest.sourceFinancing }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.trigger_amount'|trans }}</label><input type="text" name="amount_trigger" value="{{ invest.amountTrigger }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.amount_obtained'|trans }}</label><input type="text" name="amount_obtained" value="{{ invest.amountObtained }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price" value="{{ invest.servicePrice }}"></div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('wp7-{{ invest.id }}').classList.remove('editing')">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                                <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.save'|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <form id="delete-wp7-{{ invest.id }}-form" method="POST" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="delete_wp">
+                <input type="hidden" name="wp_type" value="wp7">
+                <input type="hidden" name="wp_id" value="{{ invest.id }}">
+            </form>
+            {% endfor %}
+
+            <form method="POST" id="add-wp7-form" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="create_wp">
+                <input type="hidden" name="wp_type" value="wp7">
+                <div class="form-grid">
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.investment_type'|trans }} *</label><input type="text" name="type_investment" required></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.funding_source'|trans }}</label><input type="text" name="source_financing"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.trigger_amount'|trans }}</label><input type="text" name="amount_trigger"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.amount_obtained'|trans }}</label><input type="text" name="amount_obtained"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-wp7-form').style.display='none'; document.getElementById('add-wp7-btn').style.display='';">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.create'|trans }}</button>
+                </div>
+            </form>
+            <button type="button" class="btn-add" id="add-wp7-btn" onclick="document.getElementById('add-wp7-form').style.display='block'; this.style.display='none';">
+                {{ 'app.edit_entreprise.add_investment'|trans }}
+            </button>
+        </div>
+    </div>
+
+    {# Section: Mises en Relation #}
+    <div class="section {% if entreprise.miseEnRelations|length > 0 %}open{% endif %}">
+        <div class="section-header" onclick="this.parentElement.classList.toggle('open')">
+            <h2>{{ 'app.edit_entreprise.relations'|trans }} <span class="count">{{ entreprise.miseEnRelations|length }}</span></h2>
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </div>
+        <div class="section-body">
+            {% for relation in entreprise.miseEnRelations %}
+            <div class="wp-item" id="relation-{{ relation.id }}">
+                <div class="wp-item-header">
+                    <span class="wp-item-title">{{ relation.technology|default('app.edit_entreprise.default_relation'|trans) }}</span>
+                    <div class="wp-item-actions">
+                        <button type="button" class="btn-edit" onclick="document.getElementById('relation-{{ relation.id }}').classList.toggle('editing')">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                        </button>
+                        <button type="button" class="btn-delete" onclick="if(confirm('{{ 'app.edit_entreprise.confirm_delete_relation'|trans }}')) document.getElementById('delete-relation-{{ relation.id }}-form').submit()">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                    </div>
+                </div>
+                <div class="wp-item-body">
+                    <dl class="wp-item-preview">
+                        <dt>{{ 'app.edit_entreprise.technology'|trans }}</dt><dd>{{ relation.technology|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.responsible'|trans }}</dt><dd>{{ relation.responsible|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.service_price'|trans }}</dt><dd>{{ relation.servicePrice|default('—') }}</dd>
+                        <dt>{{ 'app.edit_entreprise.price_invoiced'|trans }}</dt><dd>{{ relation.priceInvoiced|default('—') }}</dd>
+                    </dl>
+                    <div class="wp-item-form">
+                        <form method="POST">
+                            <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                            <input type="hidden" name="action" value="update_wp">
+                            <input type="hidden" name="wp_type" value="relation">
+                            <input type="hidden" name="wp_id" value="{{ relation.id }}">
+                            <div class="form-grid">
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.technology'|trans }}</label><input type="text" name="technology" value="{{ relation.technology }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible" value="{{ relation.responsible }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price" value="{{ relation.servicePrice }}"></div>
+                                <div class="form-group"><label>{{ 'app.edit_entreprise.price_invoiced'|trans }}</label><input type="text" name="price_invoiced" value="{{ relation.priceInvoiced }}"></div>
+                            </div>
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" onclick="document.getElementById('relation-{{ relation.id }}').classList.remove('editing')">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                                <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.save'|trans }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <form id="delete-relation-{{ relation.id }}-form" method="POST" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="delete_wp">
+                <input type="hidden" name="wp_type" value="relation">
+                <input type="hidden" name="wp_id" value="{{ relation.id }}">
+            </form>
+            {% endfor %}
+
+            <form method="POST" id="add-relation-form" style="display:none;">
+                <input type="hidden" name="_token" value="{{ csrf_token('entreprise_form') }}">
+                <input type="hidden" name="action" value="create_wp">
+                <input type="hidden" name="wp_type" value="relation">
+                <div class="form-grid">
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.technology'|trans }} *</label><input type="text" name="technology" required></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.responsible'|trans }}</label><input type="text" name="responsible"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.service_price'|trans }}</label><input type="text" name="service_price"></div>
+                    <div class="form-group"><label>{{ 'app.edit_entreprise.price_invoiced'|trans }}</label><input type="text" name="price_invoiced"></div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" onclick="document.getElementById('add-relation-form').style.display='none'; document.getElementById('add-relation-btn').style.display='';">{{ 'app.edit_entreprise.cancel'|trans }}</button>
+                    <button type="submit" class="btn btn-primary">{{ 'app.edit_entreprise.create'|trans }}</button>
+                </div>
+            </form>
+            <button type="button" class="btn-add" id="add-relation-btn" onclick="document.getElementById('add-relation-form').style.display='block'; this.style.display='none';">
+                {{ 'app.edit_entreprise.add_relation'|trans }}
+            </button>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

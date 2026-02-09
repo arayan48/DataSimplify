@@ -4,12 +4,13 @@ export default class extends Controller {
     static targets = ['toggle', 'menu'];
 
     connect() {
-        // Fermer le dropdown quand on clique en dehors
-        document.addEventListener('click', (e) => this.handleOutsideClick(e));
+        // Bind handler to instance for proper removal
+        this.boundHandleOutsideClick = this.handleOutsideClick.bind(this);
+        document.addEventListener('click', this.boundHandleOutsideClick);
     }
 
     disconnect() {
-        document.removeEventListener('click', (e) => this.handleOutsideClick(e));
+        document.removeEventListener('click', this.boundHandleOutsideClick);
     }
 
     toggle() {

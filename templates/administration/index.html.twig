@@ -4,237 +4,1355 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('styles/administrateur/dashboard.css') }}?v={{ random() }}">
+    <style>
+        /* Animation pour les dropdowns */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .animate-fadeIn {
+            animation: fadeIn 0.15s ease-out;
+        }
+        
+        /* S'assurer que le conteneur du tableau gère bien l'overflow */
+        .entreprises-section table td {
+            position: relative;
+        }
+        
+        /* Ajustements des couleurs pour correspondre au thème du site */
+        .bg-primary-700 {
+            background-color: #00c3c6 !important;
+        }
+        
+        .bg-primary-600 {
+            background-color: #00c3c6 !important;
+        }
+        
+        .hover\:bg-primary-800:hover {
+            background-color: #00a8ab !important;
+        }
+        
+        .hover\:bg-primary-700:hover {
+            background-color: #00a8ab !important;
+        }
+        
+        .focus\:ring-primary-300:focus {
+            --tw-ring-color: rgba(0, 195, 198, 0.3) !important;
+        }
+        
+        .dark\:focus\:ring-primary-800:focus {
+            --tw-ring-color: rgba(0, 168, 171, 0.3) !important;
+        }
+        
+        .hover\:text-primary-700:hover {
+            color: #00a8ab !important;
+        }
+        
+        .text-primary-600 {
+            color: #00c3c6 !important;
+        }
+        
+        .bg-primary-50 {
+            background-color: rgba(0, 195, 198, 0.1) !important;
+        }
+        
+        .border-primary-300 {
+            border-color: rgba(0, 195, 198, 0.3) !important;
+        }
+        
+        .hover\:bg-primary-100:hover {
+            background-color: rgba(0, 195, 198, 0.15) !important;
+        }
+        
+        .focus\:ring-primary-500:focus {
+            --tw-ring-color: rgba(0, 195, 198, 0.5) !important;
+        }
+        
+        .focus\:border-primary-500:focus {
+            border-color: #00c3c6 !important;
+        }
+        
+        .dark\:focus\:ring-primary-600:focus {
+            --tw-ring-color: rgba(0, 195, 198, 0.6) !important;
+        }
+        
+        /* Style pour les dropdowns */
+        [id^="dropdown-"] {
+            border: 1px solid #e9ecef;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+        
+        /* Style du bouton avec les trois points */
+        button[id^="dropdown-button-"] {
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        button[id^="dropdown-button-"]:hover {
+            background-color: #f3f4f6;
+        }
+    </style>
+    <script>
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark')
+        }
+    </script>
 {% endblock %}
 
 {% block body %}
-<form method="get" action="{{ path('app_administration_dashboard') }}" class="admin-filter-bar">
-    <div class="admin-search-container">
-        <input 
-            type="text" 
-            class="admin-search-input" 
-            name="search"
-            placeholder="{{ 'app.administration.search_placeholder'|trans }}"
-            value="{{ searchQuery|default('') }}"
-        >
-        <svg class="admin-search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <path d="m21 21-4.35-4.35"></path>
-        </svg>
-    </div>
-    
-    <div class="admin-select-container">
-        <select 
-            class="admin-select" 
-            name="wp"
-            onchange="this.form.submit()"
-        >
-            <option value="">{{ 'app.administration.work_package'|trans }}</option>
-            <option value="wp2" {% if workPackageFilter == 'wp2' %}selected{% endif %}>WP2</option>
-            <option value="wp4" {% if workPackageFilter == 'wp4' %}selected{% endif %}>WP4</option>
-            <option value="wp5" {% if workPackageFilter == 'wp5' %}selected{% endif %}>WP5</option>
-            <option value="wp6" {% if workPackageFilter == 'wp6' %}selected{% endif %}>WP6</option>
-            <option value="wp7" {% if workPackageFilter == 'wp7' %}selected{% endif %}>WP7</option>
-        </select>
-    </div>
-    
-    <div class="admin-select-container">
-        <select 
-            class="admin-select" 
-            name="year"
-            onchange="this.form.submit()"
-        >
-            <option value="">{{ 'app.administration.year'|trans }}</option>
 
-            {% for i in 0..5 %}
-                <option value="{{ currentYear - i }}" {% if yearFilter == currentYear - i %}selected{% endif %}>{{ currentYear - i }}</option>
-            {% endfor %}
-        </select>
-    </div>
-
-    <div class="admin-select-container">
-        <select 
-            class="admin-select" 
-            name="partner"
-            onchange="this.form.submit()"
-        >
-            <option value="">{{ 'app.administration.partners'|trans }}</option>
-            {% if partenaires is defined %}
-                {% for partenaire in partenaires %}
-                    <option value="{{ partenaire }}" {% if partenaireFilter == partenaire %}selected{% endif %}>{{ partenaire }}</option>
-                {% endfor %}
-            {% endif %}
-        </select>
-    </div>
-    
-    {% if searchQuery or workPackageFilter or yearFilter or partenaireFilter %}
-        <a href="{{ path('app_administration_dashboard') }}" class="admin-stats-btn admin-reset-btn">
-            <svg class="stats-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path>
-                <path d="M21 3v5h-5"></path>
-                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path>
-                <path d="M3 21v-5h5"></path>
-            </svg>
-            <span class="btn-text">{{ 'app.administration.reset_filters'|trans }}</span>
-        </a>
-    {% endif %}
-    
-    <a href="{{ path('app_administration_statistics') }}" class="admin-stats-btn">
-        <svg class="stats-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="20" x2="12" y2="10"></line>
-            <line x1="18" y1="20" x2="18" y2="4"></line>
-            <line x1="6" y1="20" x2="6" y2="16"></line>
-        </svg>
-        <span class="btn-text">{{ 'app.administration.statistics'|trans }}</span>
-    </a>
-    
-    <a href="{{ path('app_administration_create_entreprise') }}" class="admin-stats-btn">
-        <svg class="stats-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        <span class="btn-text">{{ 'app.administration.create_company'|trans }}</span>
-    </a>
-</form>
-
-<div class="admin-main-layout">
-    <div class="admin-main-content">
-        {% if entreprisesGrouped is defined and entreprisesGrouped is not empty %}
-            <div class="admin-table-header">
-                <h2 class="admin-table-title">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/>
-                        <line x1="9" y1="9" x2="15" y2="9"/>
-                        <line x1="9" y1="15" x2="15" y2="15"/>
-                    </svg>
-                    Liste des entreprises par catégorie
-                </h2>
-                <p class="admin-table-subtitle">{{ entreprisesGrouped|length }} entreprise(s) trouvée(s)</p>
-            </div>
-            <div class="admin-entreprises-list">
-                {% for item in entreprisesGrouped %}
-                    <div class="admin-folder">
-                        <div class="admin-folder-header" onclick="this.parentElement.classList.toggle('open')">
-                            <div class="admin-folder-toggle">
-                                <svg class="admin-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="9 18 15 12 9 6"/>
+<section class="bg-white p-3 sm:p-5">
+    <div class="mx-auto max-w-screen-xl px-4 lg:px-12">
+        <!-- Start coding here -->
+        <div class="bg-white relative shadow-md sm:rounded-lg overflow-hidden" style="border: 1px solid #e9ecef;">
+            <div class="flex flex-col md:flex-row items-center justify-between space-y-3 md:space-y-0 md:space-x-4 p-4">
+                <div class="w-full md:w-1/2">
+                    <form class="flex items-center">
+                        <label for="simple-search" class="sr-only">{{ 'app.common.search'|trans }}</label>
+                        <div class="relative w-full">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <svg aria-hidden="true" class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
                                 </svg>
                             </div>
-                            <div class="admin-folder-icon">
-                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <rect x="2" y="7" width="20" height="14" rx="2"/>
-                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-                                </svg>
-                            </div>
-                            <div class="admin-folder-info">
-                                <h3 class="admin-folder-title">{{ item.entreprise.nom }}</h3>
-                                <div class="admin-folder-meta">
-                                    <span class="admin-folder-location">
-                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="10" r="3"/>
-                                            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"/>
-                                        </svg>
-                                        {{ item.entreprise.ville }}, {{ item.entreprise.pays }}
-                                    </span>
-                                    <span class="admin-folder-count">{{ item.categories|length }} catégorie(s)</span>
-                                </div>
-                            </div>
+                            <input type="text" id="simple-search" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pl-10 p-2" placeholder="{{ 'app.common.search_placeholder'|trans }}" required="">
                         </div>
-                        <div class="admin-folder-content">
-                            {% for category in item.categories %}
-                                <div class="admin-category-item">
-                                    <div class="admin-category-badge">
-                                        {{ category.categorie }}
-                                    </div>
-                                    <div class="admin-category-details">
-                                        {% if category.categorie == 'WP2' %}
-                                            <span class="admin-detail-item">
-                                                <span class="admin-detail-label">Score DMAO:</span>
-                                                <span class="admin-detail-value">{{ category.data.scoreDmao ?? 'N/A' }}</span>
-                                            </span>
-                                        {% elseif category.categorie == 'WP5 Event' %}
-                                            <span class="admin-detail-item">
-                                                <span class="admin-detail-label">Année:</span>
-                                                <span class="admin-detail-value">{{ category.data.year ?? 'N/A' }}</span>
-                                            </span>
-                                        {% elseif category.categorie == 'WP5 Formation' %}
-                                            <span class="admin-detail-item">
-                                                <span class="admin-detail-label">Technologie:</span>
-                                                <span class="admin-detail-value">{{ category.data.technology ?? 'N/A' }}</span>
-                                            </span>
-                                        {% elseif category.categorie == 'WP6' %}
-                                            <span class="admin-detail-item">
-                                                <span class="admin-detail-label">Technologie:</span>
-                                                <span class="admin-detail-value">{{ category.data.technology ?? 'N/A' }}</span>
-                                            </span>
-                                        {% elseif category.categorie == 'WP7' %}
-                                            <span class="admin-detail-item">
-                                                <span class="admin-detail-label">Montant:</span>
-                                                <span class="admin-detail-value">{{ category.data.amountTrigger ?? 'N/A' }}</span>
-                                            </span>
-                                        {% elseif category.categorie == 'Mise en Relation' %}
-                                            <span class="admin-detail-item">
-                                                <span class="admin-detail-label">Technologie:</span>
-                                                <span class="admin-detail-value">{{ category.data.technology ?? 'N/A' }}</span>
-                                            </span>
-                                        {% endif %}
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
-        {% else %}
-            <p class="admin-no-data">{{ 'app.administration.no_data'|trans }}</p>
-        {% endif %}
-    </div>
-    
-    <div class="admin-sidebar-info">
-        <h3 class="sidebar-title">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="2" y="7" width="20" height="14" rx="2"/>
-                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-            </svg>
-            {{ 'app.administration.company'|trans }}
-        </h3>
-        <div class="sidebar-separator"></div>
-        <div class="sidebar-list-container">
-            {% if entreprises is defined and entreprises is not empty %}
-                <div class="entreprise-sidebar-list">
-                    {% for entreprise in entreprises %}
-                        <div class="entreprise-sidebar-card">
-                            <div class="sidebar-card-icon">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5">
-                                    <rect x="2" y="7" width="20" height="14" rx="2"/>
-                                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                    </form>
+                </div>
+                <div class="w-full md:w-auto flex flex-col md:flex-row space-y-2 md:space-y-0 items-stretch md:items-center justify-end md:space-x-3 flex-shrink-0">
+                    <a href="{{ path('app_administration_create_entreprise') }}" class="flex items-center justify-center text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-4 py-2 focus:outline-none">
+                        <svg class="h-3.5 w-3.5 mr-2" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <path clip-rule="evenodd" fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" />
+                        </svg>
+                        {{ 'app.administration.create_company'|trans }}
+                    </a>
+                    <div class="flex items-center space-x-3 w-full md:w-auto">
+                        <form data-turbo="false" class="inline-block relative">
+                            <button id="filterDropdownButton" onclick="toggleFilterDropdown(event)" class="w-full md:w-auto flex items-center justify-center py-2 px-4 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-200" type="button">
+                                <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" class="h-4 w-4 mr-2 text-gray-400" viewbox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" clip-rule="evenodd" />
                                 </svg>
-                            </div>
-                            <div class="sidebar-card-content">
-                                <h4 class="sidebar-card-name">{{ entreprise.nom }}</h4>
-                                {% if entreprise.ville %}
-                                    <div class="sidebar-card-location">
-                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <circle cx="12" cy="10" r="3"/>
-                                            <path d="M12 21.7C17.3 17 20 13 20 10a8 8 0 1 0-16 0c0 3 2.7 6.9 8 11.7z"/>
-                                        </svg>
-                                        <span>{{ entreprise.ville }}{% if entreprise.pays %}, {{ entreprise.pays }}{% endif %}</span>
-                                    </div>
+                                {{ 'app.common.filter'|trans }}
+                                <svg class="-mr-1 ml-1.5 w-5 h-5" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                    <path clip-rule="evenodd" fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                                </svg>
+                            </button>
+                            <div id="filterDropdown" class="z-50 hidden w-80 p-4 bg-white rounded-lg shadow-lg max-h-96 overflow-y-auto" style="border: 1px solid #e9ecef; position: absolute; top: 100%; right: 0; margin-top: 4px;">
+                                <h6 class="mb-3 text-sm font-medium text-gray-900 border-b pb-2">{{ 'app.administration.filters'|trans }}</h6>
+                                
+                                <!-- Filtre Work Package -->
+                                <div class="mb-4">
+                                    <h6 class="mb-2 text-xs font-semibold text-gray-700 uppercase">{{ 'app.administration.work_package'|trans }}</h6>
+                                    <ul class="space-y-2 text-sm">
+                                        <li class="flex items-center">
+                                            <input id="filter_wp2" name="wp[]" type="checkbox" value="wp2" class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2" data-filter-input>
+                                            <label for="filter_wp2" class="ml-2 text-sm font-medium text-gray-900">WP2</label>
+                                        </li>
+                                        <li class="flex items-center">
+                                            <input id="filter_wp5_event" name="wp[]" type="checkbox" value="wp5_event" class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2" data-filter-input>
+                                            <label for="filter_wp5_event" class="ml-2 text-sm font-medium text-gray-900">WP5 - Event</label>
+                                        </li>
+                                        <li class="flex items-center">
+                                            <input id="filter_wp5_formation" name="wp[]" type="checkbox" value="wp5_formation" class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2" data-filter-input>
+                                            <label for="filter_wp5_formation" class="ml-2 text-sm font-medium text-gray-900">WP5 - Formation</label>
+                                        </li>
+                                        <li class="flex items-center">
+                                            <input id="filter_wp6" name="wp[]" type="checkbox" value="wp6" class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2" data-filter-input>
+                                            <label for="filter_wp6" class="ml-2 text-sm font-medium text-gray-900">WP6</label>
+                                        </li>
+                                        <li class="flex items-center">
+                                            <input id="filter_wp7" name="wp[]" type="checkbox" value="wp7" class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2" data-filter-input>
+                                            <label for="filter_wp7" class="ml-2 text-sm font-medium text-gray-900">WP7</label>
+                                        </li>
+                                        <li class="flex items-center">
+                                            <input id="filter_mise_en_relation" name="wp[]" type="checkbox" value="mise_en_relation" class="w-4 h-4 bg-gray-100 border-gray-300 rounded text-primary-600 focus:ring-primary-500 focus:ring-2" data-filter-input>
+                                            <label for="filter_mise_en_relation" class="ml-2 text-sm font-medium text-gray-900">{{ 'app.administration.networking'|trans }}</label>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Filtre Année -->
+                                <div class="mb-4">
+                                    <h6 class="mb-2 text-xs font-semibold text-gray-700 uppercase">{{ 'app.administration.year'|trans }}</h6>
+                                    <select id="filter_year" name="year" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2" data-filter-input>
+                                        <option value="">{{ 'app.administration.all_years'|trans }}</option>
+                                        {% for year in range(2020, 'now'|date('Y')) %}
+                                        <option value="{{ year }}">{{ year }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                
+                                <!-- Filtre Partenaire -->
+                                {% if app.user and 'ROLE_ADMINISTRATEUR' in app.user.roles %}
+                                <div class="mb-4">
+                                    <h6 class="mb-2 text-xs font-semibold text-gray-700 uppercase">{{ 'app.administration.partners'|trans }}</h6>
+                                    <select id="filter_partner" name="partner" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2" data-filter-input>
+                                        <option value="">{{ 'app.common.all_partners'|trans }}</option>
+                                        {% for partenaire in partenaires %}
+                                        <option value="{{ partenaire.id }}">{{ partenaire.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
                                 {% endif %}
                             </div>
-                            <div class="sidebar-card-arrow">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <polyline points="9 18 15 12 9 6"/>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <turbo-frame id="entreprises-table">
+            <div class="overflow-x-auto" style="min-height: 500px;">
+                <table class="w-full text-sm text-left text-gray-500">
+                    <thead class="text-xs text-gray-700 uppercase" style="background-color: #f8f9fa;">
+                        <tr>
+                            <th scope="col" class="px-4 py-3">{{ 'app.administration.table.company_name'|trans }}</th>
+                            <th scope="col" class="px-4 py-3">{{ 'app.administration.table.sector'|trans }}</th>
+                            <th scope="col" class="px-4 py-3">{{ 'app.administration.table.city'|trans }}</th>
+                            <th scope="col" class="px-4 py-3">{{ 'app.administration.table.size'|trans }}</th>
+                            <th scope="col" class="px-4 py-3">{{ 'app.administration.work_packages'|trans }}</th>
+                            <th scope="col" class="px-4 py-3">{{ 'app.administration.table.year'|trans }}</th>
+                            <th scope="col" class="px-4 py-3">
+                                <span class="sr-only">{{ 'app.administration.actions'|trans }}</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if entreprises is empty %}
+                        <!-- Lignes vides pour maintenir la hauteur du tableau -->
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3 text-center text-gray-500">
+                                {{ 'app.administration.no_data'|trans }}
+                            </td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        <tr class="border-b border-gray-200">
+                            <td colspan="7" class="px-4 py-3">&nbsp;</td>
+                        </tr>
+                        {% else %}
+                        {% for entreprise in entreprises %}
+                        <tr class="border-b border-gray-200">
+                            <th scope="row" class="px-4 py-3 font-medium text-gray-900 whitespace-nowrap">
+                                <div class="flex items-center gap-2">
+                                    {{ entreprise.nom }}
+                                    {% set hasWp = entreprise.wp2 is not null or entreprise.wp5Events is not empty or entreprise.wp5Formations is not empty or entreprise.wp6 is not empty or entreprise.wp7 is not empty or entreprise.miseEnRelations is not empty %}
+                                    {% if entreprise.statut == 'rouge' and hasWp %}
+                                        <svg class="w-5 h-5 text-red-600" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    {% elseif entreprise.statut == 'orange' and hasWp %}
+                                        <svg class="w-5 h-5 text-orange-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                        </svg>
+                                    {% endif %}
+                                </div>
+                            </th>
+                            <td class="px-4 py-3">{{ entreprise.secteur }}</td>
+                            <td class="px-4 py-3">{{ entreprise.ville }}</td>
+                            <td class="px-4 py-3">{{ entreprise.taille }}</td>
+                            <td class="px-4 py-3">
+                                <div class="flex flex-wrap gap-1">
+                                    {% set bgColor = entreprise.statut == 'vert' ? 'bg-green-100' : (entreprise.statut == 'orange' ? 'bg-orange-100' : (entreprise.statut == 'rouge' ? 'bg-red-100' : 'bg-gray-100')) %}
+                                    {% set textColor = entreprise.statut == 'vert' ? 'text-green-800' : (entreprise.statut == 'orange' ? 'text-orange-800' : (entreprise.statut == 'rouge' ? 'text-red-800' : 'text-gray-800')) %}
+                                    {% if entreprise.wp2 is not null %}
+                                        <span class="group relative cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200 transition-colors">
+                                            WP2
+                                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                                                <strong>DMAO Score:</strong> {{ entreprise.wp2.scoreDmao|default('N/A') }}<br>
+                                                <strong>DMA1:</strong> {{ entreprise.wp2.scoreDma1|default('N/A') }}
+                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                                            </span>
+                                        </span>
+                                    {% endif %}
+                                    {% if entreprise.wp5Events is not empty %}
+                                        <span class="group relative cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-amber-100 text-amber-800 hover:bg-amber-200 transition-colors">
+                                            WP5-E
+                                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                                                <strong>{{ entreprise.wp5Events|length }} événement(s)</strong><br>
+                                                {% for event in entreprise.wp5Events|slice(0, 2) %}
+                                                • {{ event.eventNameEnglish|slice(0, 25) }}{% if event.eventNameEnglish|length > 25 %}...{% endif %}<br>
+                                                {% endfor %}
+                                                {% if entreprise.wp5Events|length > 2 %}+ {{ entreprise.wp5Events|length - 2 }} autre(s){% endif %}
+                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                                            </span>
+                                        </span>
+                                    {% endif %}
+                                    {% if entreprise.wp5Formations is not empty %}
+                                        <span class="group relative cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-orange-100 text-orange-800 hover:bg-orange-200 transition-colors">
+                                            WP5-F
+                                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                                                <strong>{{ entreprise.wp5Formations|length }} formation(s)</strong><br>
+                                                {% for formation in entreprise.wp5Formations|slice(0, 2) %}
+                                                • {{ formation.technology|slice(0, 25) }}{% if formation.technology|length > 25 %}...{% endif %}<br>
+                                                {% endfor %}
+                                                {% if entreprise.wp5Formations|length > 2 %}+ {{ entreprise.wp5Formations|length - 2 }} autre(s){% endif %}
+                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                                            </span>
+                                        </span>
+                                    {% endif %}
+                                    {% if entreprise.wp6 is not empty %}
+                                        <span class="group relative cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-emerald-100 text-emerald-800 hover:bg-emerald-200 transition-colors">
+                                            WP6
+                                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                                                <strong>{{ entreprise.wp6|length }} projet(s)</strong><br>
+                                                {% for project in entreprise.wp6|slice(0, 2) %}
+                                                • {{ project.technology|slice(0, 25) }}{% if project.technology|length > 25 %}...{% endif %}<br>
+                                                {% endfor %}
+                                                {% if entreprise.wp6|length > 2 %}+ {{ entreprise.wp6|length - 2 }} autre(s){% endif %}
+                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                                            </span>
+                                        </span>
+                                    {% endif %}
+                                    {% if entreprise.wp7 is not empty %}
+                                        <span class="group relative cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-pink-100 text-pink-800 hover:bg-pink-200 transition-colors">
+                                            WP7
+                                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                                                <strong>{{ entreprise.wp7|length }} investissement(s)</strong><br>
+                                                {% for invest in entreprise.wp7|slice(0, 2) %}
+                                                • {{ invest.typeInvestment|slice(0, 25) }}{% if invest.typeInvestment|length > 25 %}...{% endif %}<br>
+                                                {% endfor %}
+                                                {% if entreprise.wp7|length > 2 %}+ {{ entreprise.wp7|length - 2 }} autre(s){% endif %}
+                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                                            </span>
+                                        </span>
+                                    {% endif %}
+                                    {% if entreprise.miseEnRelations is not empty %}
+                                        <span class="group relative cursor-pointer px-2 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-800 hover:bg-indigo-200 transition-colors">
+                                            MER
+                                            <span class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50 pointer-events-none">
+                                                <strong>{{ entreprise.miseEnRelations|length }} relation(s)</strong><br>
+                                                {% for relation in entreprise.miseEnRelations|slice(0, 2) %}
+                                                • {{ relation.technology|slice(0, 25) }}{% if relation.technology|length > 25 %}...{% endif %}<br>
+                                                {% endfor %}
+                                                {% if entreprise.miseEnRelations|length > 2 %}+ {{ entreprise.miseEnRelations|length - 2 }} autre(s){% endif %}
+                                                <span class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></span>
+                                            </span>
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">{{ entreprise.anneeCreation }}</td>
+                            <td class="px-4 py-3 flex items-center justify-end relative">
+                                <button onclick="toggleDropdown(event, 'dropdown-{{ entreprise.id }}')" class="inline-flex items-center p-0.5 text-sm font-medium text-center text-gray-500 hover:text-gray-800 rounded-lg focus:outline-none" type="button">
+                                    <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 10a2 2 0 11-4 0 2 2 0 014 0zM12 10a2 2 0 11-4 0 2 2 0 014 0zM16 12a2 2 0 100-4 2 2 0 000 4z" />
+                                    </svg>
+                                </button>
+                                <div id="dropdown-{{ entreprise.id }}" class="hidden absolute right-0 top-8 z-50 w-56 bg-white rounded-lg shadow-xl border border-gray-200">
+                                    <ul class="py-2">
+                                        <li>
+                                            <button type="button" onclick="openDrawer('drawer-{{ entreprise.id }}')" class="flex items-center w-full px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors">
+                                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                                </svg>
+                                                <span class="font-medium">{{ 'app.common.show'|trans }}</span>
+                                            </button>
+                                        </li>
+                                        <li>
+                                            <a href="{{ path('app_administration_edit_entreprise', {id: entreprise.id}) }}" data-turbo="false" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors">
+                                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
+                                                <span class="font-medium">{{ 'app.common.edit'|trans }}</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a href="{{ path('app_administration_entreprise_statistics', {id: entreprise.id}) }}" data-turbo="false" class="flex items-center px-4 py-2.5 text-sm text-gray-700 hover:bg-primary-50 hover:text-primary-700 transition-colors">
+                                                <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                                                </svg>
+                                                <span class="font-medium">{{ 'app.administration.statistics'|trans }}</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                    <div class="border-t border-gray-100 py-2 bg-white">
+                                        <button type="button" onclick="openModal('deleteModal-{{ entreprise.id }}')" class="flex items-center w-full px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors bg-white">
+                                            <svg class="w-5 h-5 mr-3" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                                <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span class="font-medium">{{ 'app.common.delete'|trans }}</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            </turbo-frame>
+            
+            <!-- Modales de confirmation de suppression -->
+            {% for entreprise in entreprises %}
+            <div id="deleteModal-{{ entreprise.id }}" aria-hidden="true" inert class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-modal md:h-full">
+                <div class="relative p-4 w-full max-w-md h-full md:h-auto">
+                    <div class="relative p-4 text-center bg-white rounded-lg shadow dark:bg-gray-800 sm:p-5">
+                        <button type="button" onclick="closeModal('deleteModal-{{ entreprise.id }}')" class="text-gray-400 absolute top-2.5 right-2.5 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center dark:hover:bg-gray-600 dark:hover:text-white">
+                            <svg aria-hidden="true" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                            <span class="sr-only">{{ 'app.administration.close'|trans }}</span>
+                        </button>
+                        <svg class="text-gray-400 dark:text-gray-500 w-11 h-11 mb-3.5 mx-auto" aria-hidden="true" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                        <p class="mb-4 text-gray-500 dark:text-gray-300">{{ 'app.administration.confirm_delete'|trans }}</p>
+                        <p class="mb-4 font-semibold text-gray-900 dark:text-white">{{ entreprise.nom }}</p>
+                        <div class="flex justify-center items-center space-x-4">
+                            <button onclick="closeModal('deleteModal-{{ entreprise.id }}')" type="button" class="py-2 px-3 text-sm font-medium text-gray-500 bg-white rounded-lg border border-gray-200 hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-primary-300 hover:text-gray-900 focus:z-10">
+                                {{ 'app.administration.no_cancel'|trans }}
+                            </button>
+                            <form method="POST" action="{{ path('app_administration_delete_entreprise', {id: entreprise.id}) }}" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete_entreprise_' ~ entreprise.id) }}">
+                                <button type="submit" class="py-2 px-3 text-sm font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300">
+                                    {{ 'app.administration.yes_delete'|trans }}
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+            
+            <!-- Drawers pour chaque entreprise -->
+            {% for entreprise in entreprises %}
+            <div id="drawer-{{ entreprise.id }}" class="overflow-y-auto fixed top-0 left-0 z-40 w-full sm:max-w-sm md:max-w-md h-screen transition-transform -translate-x-full" aria-labelledby="drawer-label-{{ entreprise.id }}" aria-hidden="true" inert>
+                <div class="bg-white/95 backdrop-blur-lg rounded-none sm:rounded-3xl shadow-2xl h-full sm:h-[calc(100vh-2rem)] p-4 sm:p-6 flex flex-col mt-0 sm:mt-4 sm:ml-4">
+                    <!-- Header -->
+                    <div class="mb-4 sm:mb-6 pb-3 sm:pb-4 border-b border-gray-200">
+                        <h4 id="drawer-label-{{ entreprise.id }}" class="text-lg sm:text-xl font-bold text-gray-900 mb-1">{{ entreprise.nom }}</h4>
+                        <p class="text-sm sm:text-base text-primary-600 font-medium">{{ entreprise.ville ?: '—' }}</p>
+                    </div>
+                    
+                    <button type="button" onclick="closeDrawer('drawer-{{ entreprise.id }}')" class="text-gray-400 bg-gray-100/80 hover:bg-gray-200 hover:text-gray-900 rounded-xl text-sm w-8 h-8 absolute top-8 right-8 flex items-center justify-center transition-all">
+                        <svg aria-hidden="true" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                        <span class="sr-only">{{ 'app.administration.close_menu'|trans }}</span>
+                    </button>
+                    
+                    <!-- Content -->
+                    <div class="flex-1 overflow-y-auto space-y-3 sm:space-y-4 mb-4 sm:mb-6">
+                        <div class="bg-gray-50/80 rounded-2xl p-3 sm:p-4">
+                            <dt class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">{{ 'app.create_entreprise.sector'|trans }}</dt>
+                            <dd class="text-sm text-gray-900 font-medium">{{ entreprise.secteur ?: '—' }}</dd>
+                        </div>
+                        
+                        <div class="bg-gray-50/80 rounded-2xl p-3 sm:p-4">
+                            <dt class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">{{ 'app.create_entreprise.postal_code'|trans }}</dt>
+                            <dd class="text-sm text-gray-900 font-medium">{{ entreprise.codePostal ?: '—' }}</dd>
+                        </div>
+                        
+                        <div class="bg-gray-50/80 rounded-2xl p-3 sm:p-4">
+                            <dt class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">{{ 'app.create_entreprise.company_size'|trans }}</dt>
+                            <dd class="text-sm text-gray-900 font-medium">{{ entreprise.taille ?: '—' }}</dd>
+                        </div>
+                        
+                        <div class="bg-gray-50/80 rounded-2xl p-3 sm:p-4">
+                            <dt class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">{{ 'app.create_entreprise.creation_year'|trans }}</dt>
+                            <dd class="text-sm text-gray-900 font-medium">{{ entreprise.anneeCreation ?: '—' }}</dd>
+                        </div>
+                        
+                        <div class="bg-gray-50/80 rounded-2xl p-3 sm:p-4">
+                            <dt class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 sm:mb-2">{{ 'app.create_entreprise.siret'|trans }}</dt>
+                            <dd class="text-sm text-gray-900 font-medium">{{ entreprise.siret ?: '—' }}</dd>
+                        </div>
+
+                        {# Work Packages Section #}
+                        {% set wp2Count = entreprise.wp2 ? 1 : 0 %}
+                        {% set wp5EventsCount = entreprise.wp5Events|length %}
+                        {% set wp5FormationsCount = entreprise.wp5Formations|length %}
+                        {% set wp6Count = entreprise.wp6|length %}
+                        {% set wp7Count = entreprise.wp7|length %}
+                        {% set relationsCount = entreprise.miseEnRelations|length %}
+                        {% set totalWp = wp2Count + wp5EventsCount + wp5FormationsCount + wp6Count + wp7Count + relationsCount %}
+
+                        {% if totalWp > 0 %}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
                                 </svg>
+                                Work Packages ({{ totalWp }})
+                            </h5>
+                            
+                            {# Menu WP avec slide #}
+                            <div class="wp-menu-container space-y-2">
+                                {# WP2 #}
+                                {% if entreprise.wp2 %}
+                                <div class="wp-menu-item" onclick="openWpSlide('wp2-slide-{{ entreprise.id }}')">
+                                    <div class="flex items-center justify-between p-3 bg-blue-50 rounded-xl cursor-pointer hover:bg-blue-100 transition-all group border border-transparent hover:border-blue-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-blue-500 flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-gray-900">{{ 'app.administration.wp2_dmao'|trans }}</div>
+                                                <div class="text-xs text-gray-500">{{ 'app.administration.score'|trans }}: {{ entreprise.wp2.scoreDmao|default('N/A') }}</div>
+                                            </div>
+                                        </div>
+                                        <svg class="w-5 h-5 text-gray-400 group-hover:text-blue-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {# WP5 Events #}
+                                {% if entreprise.wp5Events is not empty %}
+                                <div class="wp-menu-item" onclick="openWpSlide('wp5events-slide-{{ entreprise.id }}')">
+                                    <div class="flex items-center justify-between p-3 bg-amber-50 rounded-xl cursor-pointer hover:bg-amber-100 transition-all group border border-transparent hover:border-amber-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-amber-500 flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-gray-900">{{ 'app.administration.wp5_events'|trans }}</div>
+                                                <div class="text-xs text-gray-500">{{ wp5EventsCount }} {{ 'app.administration.items'|trans }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-amber-200 text-amber-800 rounded-full text-xs font-bold">{{ wp5EventsCount }}</span>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-amber-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {# WP5 Formations #}
+                                {% if entreprise.wp5Formations is not empty %}
+                                <div class="wp-menu-item" onclick="openWpSlide('wp5formations-slide-{{ entreprise.id }}')">
+                                    <div class="flex items-center justify-between p-3 bg-orange-50 rounded-xl cursor-pointer hover:bg-orange-100 transition-all group border border-transparent hover:border-orange-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-orange-500 flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-gray-900">{{ 'app.administration.wp5_formations'|trans }}</div>
+                                                <div class="text-xs text-gray-500">{{ wp5FormationsCount }} {{ 'app.administration.items'|trans }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-orange-200 text-orange-800 rounded-full text-xs font-bold">{{ wp5FormationsCount }}</span>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-orange-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {# WP6 #}
+                                {% if entreprise.wp6 is not empty %}
+                                <div class="wp-menu-item" onclick="openWpSlide('wp6-slide-{{ entreprise.id }}')">
+                                    <div class="flex items-center justify-between p-3 bg-emerald-50 rounded-xl cursor-pointer hover:bg-emerald-100 transition-all group border border-transparent hover:border-emerald-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-emerald-500 flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-gray-900">{{ 'app.administration.wp6_projects'|trans }}</div>
+                                                <div class="text-xs text-gray-500">{{ wp6Count }} {{ 'app.administration.items'|trans }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-emerald-200 text-emerald-800 rounded-full text-xs font-bold">{{ wp6Count }}</span>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {# WP7 #}
+                                {% if entreprise.wp7 is not empty %}
+                                <div class="wp-menu-item" onclick="openWpSlide('wp7-slide-{{ entreprise.id }}')">
+                                    <div class="flex items-center justify-between p-3 bg-pink-50 rounded-xl cursor-pointer hover:bg-pink-100 transition-all group border border-transparent hover:border-pink-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-pink-500 flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-gray-900">{{ 'app.administration.wp7_investments'|trans }}</div>
+                                                <div class="text-xs text-gray-500">{{ wp7Count }} {{ 'app.administration.items'|trans }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-pink-200 text-pink-800 rounded-full text-xs font-bold">{{ wp7Count }}</span>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-pink-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
+
+                                {# Relations #}
+                                {% if entreprise.miseEnRelations is not empty %}
+                                <div class="wp-menu-item" onclick="openWpSlide('relations-slide-{{ entreprise.id }}')">
+                                    <div class="flex items-center justify-between p-3 bg-indigo-50 rounded-xl cursor-pointer hover:bg-indigo-100 transition-all group border border-transparent hover:border-indigo-200">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-lg bg-indigo-500 flex items-center justify-center">
+                                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                                </svg>
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold text-gray-900">{{ 'app.administration.networking_relations'|trans }}</div>
+                                                <div class="text-xs text-gray-500">{{ relationsCount }} {{ 'app.administration.items'|trans }}</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-1 bg-indigo-200 text-indigo-800 rounded-full text-xs font-bold">{{ relationsCount }}</span>
+                                            <svg class="w-5 h-5 text-gray-400 group-hover:text-indigo-600 group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endif %}
                             </div>
                         </div>
-                    {% endfor %}
+                        {% else %}
+                        <div class="mt-4 pt-4 border-t border-gray-200">
+                            <div class="text-center py-6 bg-gray-50 rounded-xl">
+                                <svg class="w-10 h-10 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/>
+                                </svg>
+                                <p class="text-sm text-gray-500">{{ 'app.administration.no_work_package'|trans }}</p>
+                                <p class="text-xs text-gray-400 mt-1">{{ 'app.administration.add_wp_hint'|trans }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Actions Footer -->
+                    <div class="pt-3 sm:pt-4 border-t border-gray-200 flex gap-2 sm:gap-3">
+                        <a href="{{ path('app_administration_edit_entreprise', {id: entreprise.id}) }}" data-turbo="false" class="flex-1 inline-flex items-center justify-center bg-primary-700 hover:bg-primary-800 text-white font-semibold rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm transition-all hover:shadow-lg">
+                            <svg aria-hidden="true" class="w-4 h-4 mr-1.5 sm:mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z"></path><path fill-rule="evenodd" d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z" clip-rule="evenodd"></path></svg>
+                            {{ 'app.common.edit'|trans }}
+                        </a>
+                        
+                        <button type="button" onclick="openModal('deleteModal-{{ entreprise.id }}')" class="flex-1 inline-flex items-center justify-center bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm transition-all hover:shadow-lg">
+                            <svg aria-hidden="true" class="w-4 h-4 mr-1.5 sm:mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
+                            {{ 'app.common.delete'|trans }}
+                        </button>
+                    </div>
                 </div>
-            {% else %}
-                <p class="admin-no-data">{{ 'app.administration.no_company'|trans }}</p>
-            {% endif %}
+
+                {# ========== WP SLIDE PANELS ========== #}
+                
+                {# WP2 Slide Panel #}
+                {% if entreprise.wp2 %}
+                <div id="wp2-slide-{{ entreprise.id }}" class="wp-slide-panel fixed top-0 right-0 z-50 w-full sm:max-w-md h-screen bg-white shadow-2xl translate-x-full transition-transform duration-300 ease-out">
+                    <div class="h-full flex flex-col">
+                        {# Header with back button #}
+                        <div class="flex items-center gap-3 p-4 border-b border-gray-200 bg-blue-500">
+                            <button onclick="closeWpSlide('wp2-slide-{{ entreprise.id }}')" class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white">WP2 - DMAO</h3>
+                                <p class="text-sm text-blue-100">{{ entreprise.nom }}</p>
+                            </div>
+                        </div>
+                        
+                        {# Content #}
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div class="space-y-4">
+                                <div class="bg-blue-50 rounded-xl p-4">
+                                    <h4 class="text-sm font-bold text-blue-800 mb-3 flex items-center gap-2">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                        </svg>
+                                        Scores
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="bg-white rounded-lg p-3 text-center">
+                                            <div class="text-2xl font-bold text-blue-600">{{ entreprise.wp2.scoreDmao|default('—') }}</div>
+                                            <div class="text-xs text-gray-500 mt-1">{{ 'app.administration.score_dmao'|trans }}</div>
+                                        </div>
+                                        <div class="bg-white rounded-lg p-3 text-center">
+                                            <div class="text-2xl font-bold text-blue-600">{{ entreprise.wp2.scoreDma1|default('—') }}</div>
+                                            <div class="text-xs text-gray-500 mt-1">Score DMA1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="space-y-3">
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.digital_strategy'|trans }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ entreprise.wp2.digitalStrategy|default('Non renseigné') }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.digital_readiness'|trans }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ entreprise.wp2.digitalReadiness|default('Non renseigné') }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.human_centric'|trans }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ entreprise.wp2.humanCentric|default('Non renseigné') }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.data_governance'|trans }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ entreprise.wp2.dataGovernance|default('Non renseigné') }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.automation_ai'|trans }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ entreprise.wp2.ai|default('Non renseigné') }}</div>
+                                    </div>
+                                    <div class="bg-gray-50 rounded-lg p-3">
+                                        <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.green_digitalisation'|trans }}</div>
+                                        <div class="text-sm font-medium text-gray-900">{{ entreprise.wp2.green|default('Non renseigné') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# WP5 Events Slide Panel #}
+                {% if entreprise.wp5Events is not empty %}
+                <div id="wp5events-slide-{{ entreprise.id }}" class="wp-slide-panel fixed top-0 right-0 z-50 w-full sm:max-w-lg h-screen bg-white shadow-2xl translate-x-full transition-transform duration-300 ease-out">
+                    <div class="h-full flex flex-col">
+                        <div class="flex items-center gap-3 p-4 border-b border-gray-200 bg-amber-500">
+                            <button onclick="closeWpSlide('wp5events-slide-{{ entreprise.id }}')" class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white">{{ 'app.administration.wp5_events'|trans }}</h3>
+                                <p class="text-sm text-amber-100">{{ entreprise.wp5Events|length }} {{ 'app.administration.events'|trans|lower }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div class="space-y-4">
+                                {% for event in entreprise.wp5Events %}
+                                <div class="bg-amber-50 rounded-xl p-4 border-l-4 border-amber-500">
+                                    {# Header avec titre #}
+                                    <div class="mb-4 pb-3 border-b border-amber-200">
+                                        <div class="font-bold text-gray-900 text-lg">{{ event.eventNameEnglish|default('Sans titre') }}</div>
+                                        <div class="text-sm text-gray-600 italic mt-1">{{ event.eventNameOriginal|default('—') }}</div>
+                                    </div>
+                                    
+                                    {# Toutes les informations #}
+                                    <div class="space-y-3">
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.start_date'|trans }}</div>
+                                                <div class="font-medium text-gray-900">{{ event.startDate ? event.startDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.end_date'|trans }}</div>
+                                                <div class="font-medium text-gray-900">{{ event.endDate ? event.endDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.participants'|trans }}</div>
+                                                <div class="font-medium text-gray-900">{{ event.attendeesNumber|default('—') }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.mode'|trans }}</div>
+                                                <div class="font-medium text-gray-900">{{ event.deliveryMode|default('—') }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">EDIH Co-organisateur</div>
+                                            <div class="font-medium text-gray-900">{{ event.edihCoOrganiser|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Co-organisateur</div>
+                                            <div class="font-medium text-gray-900">{{ event.coOrganiser|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.service_category'|trans }}</div>
+                                            <div class="font-medium text-gray-900">{{ event.serviceCategory|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.main_technologies'|trans }}</div>
+                                            <div class="font-medium text-gray-900 text-sm">{{ event.mainTechnologies|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Secteurs principaux</div>
+                                            <div class="font-medium text-gray-900 text-sm">{{ event.mainSectors|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Site web</div>
+                                            {% if event.websiteUrl %}
+                                            <a href="{{ event.websiteUrl }}" target="_blank" class="font-medium text-amber-600 hover:text-amber-800 text-sm break-all">{{ event.websiteUrl }}</a>
+                                            {% else %}
+                                            <div class="font-medium text-gray-900">—</div>
+                                            {% endif %}
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Description</div>
+                                            <div class="font-medium text-gray-900 text-sm">{{ event.eventDescription|default('—') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# WP5 Formations Slide Panel #}
+                {% if entreprise.wp5Formations is not empty %}
+                <div id="wp5formations-slide-{{ entreprise.id }}" class="wp-slide-panel fixed top-0 right-0 z-50 w-full sm:max-w-lg h-screen bg-white shadow-2xl translate-x-full transition-transform duration-300 ease-out">
+                    <div class="h-full flex flex-col">
+                        <div class="flex items-center gap-3 p-4 border-b border-gray-200 bg-orange-500">
+                            <button onclick="closeWpSlide('wp5formations-slide-{{ entreprise.id }}')" class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white">{{ 'app.administration.wp5_formations'|trans }}</h3>
+                                <p class="text-sm text-orange-100">{{ entreprise.wp5Formations|length }} {{ 'app.administration.formations'|trans|lower }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div class="space-y-4">
+                                {% for formation in entreprise.wp5Formations %}
+                                <div class="bg-orange-50 rounded-xl p-4 border-l-4 border-orange-500">
+                                    {# Header avec titre #}
+                                    <div class="mb-4 pb-3 border-b border-orange-200">
+                                        <div class="font-bold text-gray-900 text-lg">{{ formation.technology|default('Sans titre') }}</div>
+                                    </div>
+                                    
+                                    {# Toutes les informations #}
+                                    <div class="space-y-3">
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.responsible'|trans }}</div>
+                                            <div class="font-medium text-gray-900">{{ formation.responsible|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">{{ 'app.administration.price'|trans }} service</div>
+                                                <div class="font-medium text-gray-900">{{ formation.servicePrice|default('—') }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Prix facturé</div>
+                                                <div class="font-medium text-gray-900">{{ formation.priceInvoiced|default('—') }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date début</div>
+                                                <div class="font-medium text-gray-900">{{ formation.startDate ? formation.startDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date fin</div>
+                                                <div class="font-medium text-gray-900">{{ formation.finishDate ? formation.finishDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# WP6 Slide Panel #}
+                {% if entreprise.wp6 is not empty %}
+                <div id="wp6-slide-{{ entreprise.id }}" class="wp-slide-panel fixed top-0 right-0 z-50 w-full sm:max-w-lg h-screen bg-white shadow-2xl translate-x-full transition-transform duration-300 ease-out">
+                    <div class="h-full flex flex-col">
+                        <div class="flex items-center gap-3 p-4 border-b border-gray-200 bg-emerald-500">
+                            <button onclick="closeWpSlide('wp6-slide-{{ entreprise.id }}')" class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white">WP6 - Projets</h3>
+                                <p class="text-sm text-emerald-100">{{ entreprise.wp6|length }} projet(s)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div class="space-y-4">
+                                {% for project in entreprise.wp6 %}
+                                <div class="bg-emerald-50 rounded-xl p-4 border-l-4 border-emerald-500">
+                                    {# Header avec titre #}
+                                    <div class="mb-4 pb-3 border-b border-emerald-200">
+                                        <div class="font-bold text-gray-900 text-lg">{{ project.technology|default('Sans titre') }}</div>
+                                    </div>
+                                    
+                                    {# Toutes les informations #}
+                                    <div class="space-y-3">
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Responsable</div>
+                                            <div class="font-medium text-gray-900">{{ project.responsible|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Prix service</div>
+                                                <div class="font-medium text-gray-900">{{ project.servicePrice|default('—') }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Prix facturé</div>
+                                                <div class="font-medium text-gray-900">{{ project.priceInvoiced|default('—') }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date début</div>
+                                                <div class="font-medium text-gray-900">{{ project.startDate ? project.startDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date fin</div>
+                                                <div class="font-medium text-gray-900">{{ project.finishDate ? project.finishDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# WP7 Slide Panel #}
+                {% if entreprise.wp7 is not empty %}
+                <div id="wp7-slide-{{ entreprise.id }}" class="wp-slide-panel fixed top-0 right-0 z-50 w-full sm:max-w-lg h-screen bg-white shadow-2xl translate-x-full transition-transform duration-300 ease-out">
+                    <div class="h-full flex flex-col">
+                        <div class="flex items-center gap-3 p-4 border-b border-gray-200 bg-pink-500">
+                            <button onclick="closeWpSlide('wp7-slide-{{ entreprise.id }}')" class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white">WP7 - Investissements</h3>
+                                <p class="text-sm text-pink-100">{{ entreprise.wp7|length }} investissement(s)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div class="space-y-4">
+                                {% for invest in entreprise.wp7 %}
+                                <div class="bg-pink-50 rounded-xl p-4 border-l-4 border-pink-500">
+                                    {# Header avec titre #}
+                                    <div class="mb-4 pb-3 border-b border-pink-200">
+                                        <div class="font-bold text-gray-900 text-lg">{{ invest.typeInvestment|default('Sans titre') }}</div>
+                                    </div>
+                                    
+                                    {# Toutes les informations #}
+                                    <div class="space-y-3">
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Responsable</div>
+                                            <div class="font-medium text-gray-900">{{ invest.responsible|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Source de financement</div>
+                                            <div class="font-medium text-gray-900">{{ invest.sourceFinancing|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Montant déclencheur</div>
+                                                <div class="font-medium text-gray-900">{{ invest.amountTrigger|default('—') }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Montant obtenu</div>
+                                                <div class="font-bold text-emerald-600 text-lg">{{ invest.amountObtained|default('—') }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Prix service</div>
+                                                <div class="font-medium text-gray-900">{{ invest.servicePrice|default('—') }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Prix facturé</div>
+                                                <div class="font-medium text-gray-900">{{ invest.priceInvoiced|default('—') }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date début</div>
+                                                <div class="font-medium text-gray-900">{{ invest.startDate ? invest.startDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date fin</div>
+                                                <div class="font-medium text-gray-900">{{ invest.finishDate ? invest.finishDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+
+                {# Relations Slide Panel #}
+                {% if entreprise.miseEnRelations is not empty %}
+                <div id="relations-slide-{{ entreprise.id }}" class="wp-slide-panel fixed top-0 right-0 z-50 w-full sm:max-w-lg h-screen bg-white shadow-2xl translate-x-full transition-transform duration-300 ease-out">
+                    <div class="h-full flex flex-col">
+                        <div class="flex items-center gap-3 p-4 border-b border-gray-200 bg-indigo-500">
+                            <button onclick="closeWpSlide('relations-slide-{{ entreprise.id }}')" class="w-10 h-10 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                </svg>
+                            </button>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-bold text-white">Mises en Relation</h3>
+                                <p class="text-sm text-indigo-100">{{ entreprise.miseEnRelations|length }} relation(s)</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex-1 overflow-y-auto p-4">
+                            <div class="space-y-4">
+                                {% for relation in entreprise.miseEnRelations %}
+                                <div class="bg-indigo-50 rounded-xl p-4 border-l-4 border-indigo-500">
+                                    {# Header avec titre #}
+                                    <div class="mb-4 pb-3 border-b border-indigo-200">
+                                        <div class="font-bold text-gray-900 text-lg">{{ relation.technology|default('Sans titre') }}</div>
+                                    </div>
+                                    
+                                    {# Toutes les informations #}
+                                    <div class="space-y-3">
+                                        <div class="bg-white rounded-lg p-3">
+                                            <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Responsable</div>
+                                            <div class="font-medium text-gray-900">{{ relation.responsible|default('—') }}</div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Prix service</div>
+                                                <div class="font-medium text-gray-900">{{ relation.servicePrice|default('—') }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Prix facturé</div>
+                                                <div class="font-medium text-gray-900">{{ relation.priceInvoiced|default('—') }}</div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="grid grid-cols-2 gap-3">
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date début</div>
+                                                <div class="font-medium text-gray-900">{{ relation.startDate ? relation.startDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                            <div class="bg-white rounded-lg p-3">
+                                                <div class="text-xs text-gray-500 uppercase font-semibold mb-1">Date fin</div>
+                                                <div class="font-medium text-gray-900">{{ relation.finishDate ? relation.finishDate|date('d/m/Y') : '—' }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            
+            <nav class="flex flex-col md:flex-row justify-between items-start md:items-center space-y-3 md:space-y-0 p-4" aria-label="Table navigation">
+                <span class="text-sm font-normal text-gray-500">
+                    {{ 'app.administration.showing'|trans }}
+                    <span class="font-semibold text-gray-900">{{ entreprises|length > 0 ? 1 : 0 }}-{{ entreprises|length }}</span>
+                    {{ 'app.administration.of'|trans }}
+                    <span class="font-semibold text-gray-900">{{ entreprises|length }}</span>
+                </span>
+                {% set totalPages = (entreprises|length / 10)|round(0, 'ceil') %}
+                <ul class="inline-flex items-stretch -space-x-px">
+                    <li>
+                        <a href="#" class="flex items-center justify-center h-full py-1.5 px-3 ml-0 text-gray-500 bg-white rounded-l-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                            <span class="sr-only">Previous</span>
+                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </li>
+                    {% for page in 1..totalPages|default(1) %}
+                        {% if page == 1 or page == totalPages or (page >= 1 and page <= 3) %}
+                    <li>
+                        <a href="#" {% if page == 1 %}aria-current="page"{% endif %} class="flex items-center justify-center text-sm py-2 px-3 leading-tight {% if page == 1 %}text-primary-600 bg-primary-50 border border-primary-300 hover:bg-primary-100 hover:text-primary-700 z-10{% else %}text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700{% endif %}">{{ page }}</a>
+                    </li>
+                        {% elseif page == 4 %}
+                    <li>
+                        <a href="#" class="flex items-center justify-center text-sm py-2 px-3 leading-tight text-gray-500 bg-white border border-gray-300 hover:bg-gray-100 hover:text-gray-700">...</a>
+                    </li>
+                        {% endif %}
+                    {% endfor %}
+                    <li>
+                        <a href="#" class="flex items-center justify-center h-full py-1.5 px-3 leading-tight text-gray-500 bg-white rounded-r-lg border border-gray-300 hover:bg-gray-100 hover:text-gray-700">
+                            <span class="sr-only">Next</span>
+                            <svg class="w-5 h-5" aria-hidden="true" fill="currentColor" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                            </svg>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
         </div>
     </div>
-</div>
+</section>
 
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Fonction pour toggle les dropdowns (remplace Flowbite pour les éléments dans turbo-frame)
+        function toggleDropdown(event, dropdownId) {
+            event.stopPropagation();
+            const dropdown = document.getElementById(dropdownId);
+            
+            // Fermer tous les autres dropdowns
+            document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+                if (d.id !== dropdownId && d.id !== 'filterDropdown') {
+                    d.classList.add('hidden');
+                }
+            });
+            
+            // Fermer le filtre dropdown aussi
+            const filterDropdown = document.getElementById('filterDropdown');
+            if (filterDropdown) filterDropdown.classList.add('hidden');
+            
+            // Toggle le dropdown actuel
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Fonction pour toggle le dropdown des filtres
+        function toggleFilterDropdown(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            const filterDropdown = document.getElementById('filterDropdown');
+            
+            // Fermer les autres dropdowns
+            document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+                if (d.id !== 'filterDropdown') {
+                    d.classList.add('hidden');
+                }
+            });
+            
+            // Toggle le dropdown des filtres
+            filterDropdown.classList.toggle('hidden');
+        }
+        
+        // Fonction pour ouvrir un drawer
+        function openDrawer(drawerId) {
+            const drawer = document.getElementById(drawerId);
+            if (drawer) {
+                drawer.classList.remove('-translate-x-full');
+                drawer.removeAttribute('inert');
+                drawer.removeAttribute('aria-hidden');
+                // Ajouter backdrop
+                const backdrop = document.createElement('div');
+                backdrop.className = 'bg-gray-900 bg-opacity-50 fixed inset-0 z-30';
+                backdrop.id = 'drawer-backdrop';
+                backdrop.onclick = () => closeDrawer(drawerId);
+                document.body.appendChild(backdrop);
+                // Fermer le dropdown
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
+            }
+        }
+        
+        // Fonction pour fermer un drawer
+        function closeDrawer(drawerId) {
+            const drawer = document.getElementById(drawerId);
+            if (drawer) {
+                drawer.classList.add('-translate-x-full');
+                drawer.setAttribute('inert', '');
+                drawer.setAttribute('aria-hidden', 'true');
+                const backdrop = document.getElementById('drawer-backdrop');
+                if (backdrop) backdrop.remove();
+                // Fermer aussi les WP slide panels associés
+                document.querySelectorAll('.wp-slide-panel').forEach(panel => {
+                    panel.classList.add('translate-x-full');
+                });
+                const wpBackdrop = document.getElementById('wp-slide-backdrop');
+                if (wpBackdrop) wpBackdrop.remove();
+            }
+        }
+        
+        // Fonction pour ouvrir un WP slide panel
+        function openWpSlide(slideId) {
+            const slide = document.getElementById(slideId);
+            if (slide) {
+                slide.classList.remove('translate-x-full');
+                slide.classList.add('translate-x-0');
+                // Ajouter backdrop si pas déjà présent
+                if (!document.getElementById('wp-slide-backdrop')) {
+                    const backdrop = document.createElement('div');
+                    backdrop.className = 'bg-gray-900 bg-opacity-50 fixed inset-0 z-45';
+                    backdrop.id = 'wp-slide-backdrop';
+                    backdrop.onclick = () => closeWpSlide(slideId);
+                    document.body.appendChild(backdrop);
+                }
+            }
+        }
+        
+        // Fonction pour fermer un WP slide panel
+        function closeWpSlide(slideId) {
+            const slide = document.getElementById(slideId);
+            if (slide) {
+                slide.classList.add('translate-x-full');
+                slide.classList.remove('translate-x-0');
+                const backdrop = document.getElementById('wp-slide-backdrop');
+                if (backdrop) backdrop.remove();
+            }
+        }
+        
+        // Fonction pour ouvrir une modal
+        function openModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+                modal.removeAttribute('inert');
+                modal.removeAttribute('aria-hidden');
+                // Ajouter backdrop
+                const backdrop = document.createElement('div');
+                backdrop.className = 'bg-gray-900 bg-opacity-50 fixed inset-0 z-40';
+                backdrop.id = 'modal-backdrop-' + modalId;
+                backdrop.onclick = () => closeModal(modalId);
+                document.body.appendChild(backdrop);
+                // Fermer le dropdown
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => d.classList.add('hidden'));
+            }
+        }
+        
+        // Fonction pour fermer une modal
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            if (modal) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                modal.setAttribute('inert', '');
+                modal.setAttribute('aria-hidden', 'true');
+                const backdrop = document.getElementById('modal-backdrop-' + modalId);
+                if (backdrop) backdrop.remove();
+            }
+        }
+        
+        // Fermer les dropdowns en cliquant ailleurs
+        document.addEventListener('click', function(event) {
+            // Fermer les dropdowns des actions (trois points)
+            if (!event.target.closest('[id^="dropdown-"]') && !event.target.closest('button[onclick^="toggleDropdown"]')) {
+                document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+                    d.classList.add('hidden');
+                });
+            }
+            
+            // Fermer le dropdown des filtres
+            const filterDropdown = document.getElementById('filterDropdown');
+            const filterButton = document.getElementById('filterDropdownButton');
+            if (filterDropdown && !filterDropdown.contains(event.target) && !filterButton.contains(event.target)) {
+                filterDropdown.classList.add('hidden');
+            }
+        });
+        
+        // Gestion des filtres (rechargement de page avec paramètres GET)
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterInputs = document.querySelectorAll('[data-filter-input]');
+            
+            filterInputs.forEach(input => {
+                input.addEventListener('change', function() {
+                    applyFilters();
+                });
+            });
+        });
+        
+        // Fonction pour appliquer les filtres via URL
+        function applyFilters() {
+            const params = new URLSearchParams();
+            
+            // Récupérer les WP cochés
+            const wpChecked = document.querySelectorAll('input[name="wp[]"][data-filter-input]:checked');
+            wpChecked.forEach(cb => {
+                params.append('wp[]', cb.value);
+            });
+            
+            // Récupérer les années cochées
+            const yearChecked = document.querySelectorAll('input[name="year[]"][data-filter-input]:checked');
+            yearChecked.forEach(cb => {
+                params.append('year[]', cb.value);
+            });
+            
+            // Récupérer le partenaire sélectionné
+            const partnerSelect = document.getElementById('filter_partner');
+            if (partnerSelect && partnerSelect.value) {
+                params.append('partner', partnerSelect.value);
+            }
+            
+            // Recharger la page avec les filtres
+            const queryString = params.toString();
+            window.location.href = window.location.pathname + (queryString ? '?' + queryString : '');
+        }
+    </script>
 {% endblock %}

@@ -1,0 +1,151 @@
+/* Animated Action Buttons - Global Component */
+
+/* --- Desktop Default: Expanded (Text Visible) --- */
+.action-btn {
+    height: 42px;
+    border-radius: 50px;
+    border: none;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Icon and text separated */
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    color: white;
+    padding: 0 20px; /* Full padding */
+    width: auto; /* Fit content */
+    min-width: 42px;
+}
+
+.action-btn .btn-icon {
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    transition: all 0.3s ease;
+    stroke: white;
+    fill: none;
+    stroke-width: 2;
+    flex-shrink: 0;
+}
+
+.action-btn .btn-label {
+    color: white;
+    font-size: 13px;
+    opacity: 1;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+/* Hover effects for Desktop (just subtle lift/shadow) */
+.action-btn:hover {
+    transform: translateY(-1px);
+}
+
+
+/* --- Tablet & Mobile Mode: Collapsed (Icon Only, Expand on Hover) --- */
+/* "Laisse le bouton comme donnée a l'origine uniquement le logo au premier visuel" */
+@media (max-width: 1024px) {
+    .action-btn {
+        width: 42px; /* Collapsed circle */
+        padding: 0 12px;
+        gap: 0;
+    }
+
+    .action-btn .btn-label {
+        font-size: 0;
+        opacity: 0;
+        margin-left: 0;
+        max-width: 0;
+    }
+
+    /* Expand on Hover (Touch devices might not hover well, but this matches the request for "original visual") */
+    .action-btn:hover {
+        width: auto;
+        padding: 0 16px;
+        gap: 8px;
+        border-radius: 50px;
+        transform: none; /* Reset desktop transform */
+    }
+
+    .action-btn:hover .btn-label {
+        font-size: 13px;
+        opacity: 1;
+        max-width: 200px; /* Reveal text */
+        margin-left: 4px;
+    }
+}
+
+
+/* --- Color Variants --- */
+
+/* Default / Primary */
+.action-btn.btn-primary,
+.action-btn.btn-default {
+    background-color: #1e293b;
+}
+.action-btn.btn-primary:hover,
+.action-btn.btn-default:hover {
+    background-color: #0f172a;
+    box-shadow: 0px 4px 15px rgba(30, 41, 59, 0.3);
+}
+
+/* Red / Reset / Danger */
+.action-btn.btn-danger,
+.action-btn.btn-reset {
+    background-color: #dc2626;
+}
+.action-btn.btn-danger:hover,
+.action-btn.btn-reset:hover {
+    background-color: #b91c1c;
+    box-shadow: 0px 4px 15px rgba(220, 38, 38, 0.3);
+}
+
+/* Blue / Stats / Info */
+.action-btn.btn-info,
+.action-btn.btn-stats {
+    background-color: #2563eb;
+}
+.action-btn.btn-info:hover,
+.action-btn.btn-stats:hover {
+    background-color: #1d4ed8;
+    box-shadow: 0px 4px 15px rgba(37, 99, 235, 0.3);
+}
+
+/* Green / Create / Success */
+.action-btn.btn-success,
+.action-btn.btn-create {
+    background-color: #16a34a;
+}
+.action-btn.btn-success:hover,
+.action-btn.btn-create:hover {
+    background-color: #15803d;
+    box-shadow: 0px 4px 15px rgba(22, 163, 74, 0.3);
+}
+
+/* Orange / Warning */
+.action-btn.btn-warning {
+    background-color: #f59e0b;
+}
+.action-btn.btn-warning:hover {
+    background-color: #d97706;
+    box-shadow: 0px 4px 15px rgba(245, 158, 11, 0.3);
+}
+
+/* Grey / Secondary */
+.action-btn.btn-secondary {
+    background-color: #6b7280;
+}
+.action-btn.btn-secondary:hover {
+    background-color: #4b5563;
+    box-shadow: 0px 4px 15px rgba(107, 114, 128, 0.3);
+}
+
+/* Responsive - Mobile (Very small screens) */
+@media (max-width: 480px) {
+    /* If needed to fine-tune further */
+}

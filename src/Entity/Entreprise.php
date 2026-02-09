@@ -86,6 +86,9 @@ class Entreprise
     #[ORM\JoinColumn(nullable: true)]
     private ?User $proprietaire = null;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $statut = null;
+
     public function __construct()
     {
         $this->wp5Events = new ArrayCollection();
@@ -94,6 +97,7 @@ class Entreprise
         $this->wp7 = new ArrayCollection();
         $this->miseEnRelations = new ArrayCollection();
         $this->createdAt = new \DateTime();
+        $this->statut = 'vert'; // Statut par défaut
     }
 
     public function getId(): ?int
@@ -424,6 +428,17 @@ class Entreprise
     public function setProprietaire(?User $proprietaire): static
     {
         $this->proprietaire = $proprietaire;
+        return $this;
+    }
+
+    public function getStatut(): ?string
+    {
+        return $this->statut;
+    }
+
+    public function setStatut(?string $statut): static
+    {
+        $this->statut = $statut;
         return $this;
     }
 }

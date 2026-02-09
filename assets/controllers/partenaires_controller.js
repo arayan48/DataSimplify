@@ -11,6 +11,7 @@ export default class extends Controller {
     ];
 
     static values = {
+        csrfToken: String,
         addPartner: String,
         editPartner: String,
         confirmDelete: String,
@@ -26,6 +27,9 @@ export default class extends Controller {
         this.allUsers = [];
         this.allAvailableUsers = [];
         this.selectedUserIds = new Set();
+        
+        // Exposer le controller globalement pour les onclick
+        window.partenairesController = this;
         
         // Fermer les dropdowns si on clique en dehors
         document.addEventListener('click', this.handleClickOutside.bind(this));
@@ -311,7 +315,7 @@ export default class extends Controller {
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ partnaire_id: this.currentPartenaireId })
+                    body: JSON.stringify({ partnaire_id: this.currentPartenaireId, _token: this.csrfTokenValue })
                 });
             }
             
@@ -340,7 +344,7 @@ export default class extends Controller {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ partnaire_id: '' })
+                body: JSON.stringify({ partnaire_id: '', _token: this.csrfTokenValue })
             });
 
             window.hideLoader();
@@ -367,7 +371,8 @@ export default class extends Controller {
             ville: this.villeInputTarget.value,
             codePostal: this.codePostalInputTarget.value,
             siteWeb: this.siteWebInputTarget.value,
-            description: this.descriptionInputTarget.value
+            description: this.descriptionInputTarget.value,
+            _token: this.csrfTokenValue
         };
 
         try {
@@ -414,10 +419,15 @@ export default class extends Controller {
 
         if (selectedIds.length === 0) return;
 
-        const confirmMessage = this.confirmDeleteValue.replace('{count}', selectedIds.length);
-        if (!confirm(confirmMessage)) {
-            return;
-        }
+        // Stocker les IDs pour la confirmation
+        this.selectedIdsToDelete = selectedIds;
+        
+        // Afficher la modale via la fonction globale
+        showDeleteMultiplePartenairesModal(selectedIds.length);
+    }
+
+    async executeDeleteMultiple() {
+        if (!this.selectedIdsToDelete || this.selectedIdsToDelete.length === 0) return;
 
         try {
             window.showLoader();
@@ -426,7 +436,7 @@ export default class extends Controller {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ids: selectedIds })
+                body: JSON.stringify({ ids: this.selectedIdsToDelete, _token: this.csrfTokenValue })
             });
 
             const result = await response.json();
@@ -434,6 +444,7 @@ export default class extends Controller {
 
             if (result.success) {
                 this.showNotification(result.message, 'success');
+                this.selectedIdsToDelete = null;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.showNotification(result.message, 'error');

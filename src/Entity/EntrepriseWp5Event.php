@@ -17,23 +17,44 @@ class EntrepriseWp5Event
     #[ORM\JoinColumn(nullable: false)]
     private ?Entreprise $entreprise = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $eventNameEnglish = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $eventNameOriginal = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $edihCoOrganiser = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $coOrganiser = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $startDate = null;
+
+    #[ORM\Column(type: 'date', nullable: true)]
+    private ?\DateTimeInterface $endDate = null;
+
     #[ORM\Column(nullable: true)]
-    private ?int $year = null;
+    private ?int $attendeesNumber = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $passage = null;
+    private ?string $deliveryMode = null;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $websiteUrl = null;
+
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $mainTechnologies = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $responsableWp5 = null;
+    private ?string $serviceCategory = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $responsableWp4 = null;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $mainSectors = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $needWp5 = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $actionWp5 = null;
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $eventDescription = null;
 
     public function getId(): ?int
     {
@@ -51,69 +72,146 @@ class EntrepriseWp5Event
         return $this;
     }
 
-    public function getYear(): ?int
+    public function getEventNameEnglish(): ?string
     {
-        return $this->year;
+        return $this->eventNameEnglish;
     }
 
-    public function setYear(?int $year): static
+    public function setEventNameEnglish(?string $eventNameEnglish): static
     {
-        $this->year = $year;
+        $this->eventNameEnglish = $eventNameEnglish;
         return $this;
     }
 
-    public function getPassage(): ?string
+    public function getEventNameOriginal(): ?string
     {
-        return $this->passage;
+        return $this->eventNameOriginal;
     }
 
-    public function setPassage(?string $passage): static
+    public function setEventNameOriginal(?string $eventNameOriginal): static
     {
-        $this->passage = $passage;
+        $this->eventNameOriginal = $eventNameOriginal;
         return $this;
     }
 
-    public function getResponsableWp5(): ?string
+    public function getEdihCoOrganiser(): ?string
     {
-        return $this->responsableWp5;
+        return $this->edihCoOrganiser;
     }
 
-    public function setResponsableWp5(?string $responsableWp5): static
+    public function setEdihCoOrganiser(?string $edihCoOrganiser): static
     {
-        $this->responsableWp5 = $responsableWp5;
+        $this->edihCoOrganiser = $edihCoOrganiser;
         return $this;
     }
 
-    public function getResponsableWp4(): ?string
+    public function getCoOrganiser(): ?string
     {
-        return $this->responsableWp4;
+        return $this->coOrganiser;
     }
 
-    public function setResponsableWp4(?string $responsableWp4): static
+    public function setCoOrganiser(?string $coOrganiser): static
     {
-        $this->responsableWp4 = $responsableWp4;
+        $this->coOrganiser = $coOrganiser;
         return $this;
     }
 
-    public function getNeedWp5(): ?string
+    public function getStartDate(): ?\DateTimeInterface
     {
-        return $this->needWp5;
+        return $this->startDate;
     }
 
-    public function setNeedWp5(?string $needWp5): static
+    public function setStartDate(?\DateTimeInterface $startDate): static
     {
-        $this->needWp5 = $needWp5;
+        $this->startDate = $startDate;
         return $this;
     }
 
-    public function getActionWp5(): ?string
+    public function getEndDate(): ?\DateTimeInterface
     {
-        return $this->actionWp5;
+        return $this->endDate;
     }
 
-    public function setActionWp5(?string $actionWp5): static
+    public function setEndDate(?\DateTimeInterface $endDate): static
     {
-        $this->actionWp5 = $actionWp5;
+        $this->endDate = $endDate;
+        return $this;
+    }
+
+    public function getAttendeesNumber(): ?int
+    {
+        return $this->attendeesNumber;
+    }
+
+    public function setAttendeesNumber(?int $attendeesNumber): static
+    {
+        $this->attendeesNumber = $attendeesNumber;
+        return $this;
+    }
+
+    public function getDeliveryMode(): ?string
+    {
+        return $this->deliveryMode;
+    }
+
+    public function setDeliveryMode(?string $deliveryMode): static
+    {
+        $this->deliveryMode = $deliveryMode;
+        return $this;
+    }
+
+    public function getWebsiteUrl(): ?string
+    {
+        return $this->websiteUrl;
+    }
+
+    public function setWebsiteUrl(?string $websiteUrl): static
+    {
+        $this->websiteUrl = $websiteUrl;
+        return $this;
+    }
+
+    public function getMainTechnologies(): ?string
+    {
+        return $this->mainTechnologies;
+    }
+
+    public function setMainTechnologies(?string $mainTechnologies): static
+    {
+        $this->mainTechnologies = $mainTechnologies;
+        return $this;
+    }
+
+    public function getServiceCategory(): ?string
+    {
+        return $this->serviceCategory;
+    }
+
+    public function setServiceCategory(?string $serviceCategory): static
+    {
+        $this->serviceCategory = $serviceCategory;
+        return $this;
+    }
+
+    public function getMainSectors(): ?string
+    {
+        return $this->mainSectors;
+    }
+
+    public function setMainSectors(?string $mainSectors): static
+    {
+        $this->mainSectors = $mainSectors;
+        return $this;
+    }
+
+    public function getEventDescription(): ?string
+    {
+        return $this->eventDescription;
+    }
+
+    public function setEventDescription(?string $eventDescription): static
+    {
+        $this->eventDescription = $eventDescription;
         return $this;
     }
 }

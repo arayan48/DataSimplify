@@ -1,0 +1,1028 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}{{ 'app.entreprise_stats.page_title'|trans({'%name%': entreprise.nom}) }}{% endblock %}
+
+{% block stylesheets %}
+{{ parent() }}
+<style>
+    :root {
+        --primary: #2563eb;
+        --success: #16a34a;
+        --warning: #f59e0b;
+        --danger: #dc2626;
+        --purple: #7c3aed;
+        --pink: #db2777;
+        --gray-50: #f9fafb;
+        --gray-100: #f3f4f6;
+        --gray-200: #e5e7eb;
+        --gray-300: #d1d5db;
+        --gray-500: #6b7280;
+        --gray-700: #374151;
+        --gray-900: #111827;
+    }
+
+    .stats-page {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2rem;
+        font-family: system-ui, -apple-system, sans-serif;
+    }
+
+    /* Header */
+    .stats-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 2rem;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .stats-header-left h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        margin: 0 0 0.5rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .status-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        display: inline-block;
+    }
+    .status-dot.vert { background: var(--success); }
+    .status-dot.orange { background: var(--warning); }
+    .status-dot.rouge { background: var(--danger); }
+
+    .stats-header-meta {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.875rem;
+        color: var(--gray-500);
+    }
+
+    .stats-header-meta span {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    .btn-back {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1rem;
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-700);
+        text-decoration: none;
+        transition: all 0.15s;
+    }
+    .btn-back:hover {
+        background: var(--gray-50);
+        border-color: var(--gray-300);
+    }
+
+    /* KPI Grid */
+    .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .kpi-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 1.25rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .kpi-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+    }
+    .kpi-card.blue::before { background: var(--primary); }
+    .kpi-card.green::before { background: var(--success); }
+    .kpi-card.purple::before { background: var(--purple); }
+    .kpi-card.orange::before { background: var(--warning); }
+    .kpi-card.pink::before { background: var(--pink); }
+
+    .kpi-label {
+        font-size: 0.8125rem;
+        color: var(--gray-500);
+        margin-bottom: 0.375rem;
+    }
+
+    .kpi-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-900);
+        line-height: 1.2;
+    }
+
+    .kpi-sub {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+    }
+
+    .kpi-sub.positive { color: var(--success); }
+    .kpi-sub.negative { color: var(--danger); }
+
+    /* Charts Grid */
+    .charts-row {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+        .charts-row { grid-template-columns: 1fr; }
+    }
+
+    .chart-card {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .chart-card h3 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--gray-900);
+        margin: 0 0 1rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .chart-card h3 .icon {
+        width: 18px;
+        height: 18px;
+        color: var(--gray-400);
+    }
+
+    .chart-container {
+        height: 280px;
+        width: 100%;
+        min-width: 200px;
+        position: relative;
+    }
+
+    .chart-container.small {
+        height: 200px;
+        width: 100%;
+    }
+
+    /* Progress bars */
+    .progress-list {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .progress-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+    }
+
+    .progress-header {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8125rem;
+    }
+
+    .progress-label { color: var(--gray-700); font-weight: 500; }
+    .progress-value { color: var(--gray-500); }
+
+    .progress-bar {
+        height: 8px;
+        background: var(--gray-100);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .progress-fill {
+        height: 100%;
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+
+    /* Section Tabs */
+    .tabs-wrapper {
+        background: white;
+        border: 1px solid var(--gray-200);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .tabs-nav {
+        display: flex;
+        border-bottom: 1px solid var(--gray-200);
+        overflow-x: auto;
+        padding: 0 0.5rem;
+    }
+
+    .tab-btn {
+        padding: 1rem 1.25rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--gray-500);
+        background: none;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+        border-bottom: 2px solid transparent;
+        margin-bottom: -1px;
+        transition: all 0.15s;
+    }
+
+    .tab-btn:hover {
+        color: var(--gray-700);
+    }
+
+    .tab-btn.active {
+        color: var(--primary);
+        border-bottom-color: var(--primary);
+    }
+
+    .tab-content {
+        display: none;
+        padding: 1.5rem;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+
+    /* Tables */
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 0.875rem 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--gray-100);
+    }
+
+    .data-table th {
+        font-weight: 600;
+        color: var(--gray-700);
+        background: var(--gray-50);
+        font-size: 0.8125rem;
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .data-table tbody tr:hover {
+        background: var(--gray-50);
+    }
+
+    /* Badges */
+    .badge {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.625rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+        border-radius: 6px;
+    }
+
+    .badge-blue { background: #dbeafe; color: #1e40af; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-purple { background: #f3e8ff; color: #6b21a8; }
+    .badge-orange { background: #fed7aa; color: #c2410c; }
+    .badge-pink { background: #fce7f3; color: #be185d; }
+    .badge-gray { background: var(--gray-100); color: var(--gray-700); }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: var(--gray-500);
+    }
+
+    .empty-state svg {
+        width: 48px;
+        height: 48px;
+        margin: 0 auto 1rem;
+        color: var(--gray-300);
+    }
+
+    /* Summary mini cards in tabs */
+    .tab-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1.5rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid var(--gray-100);
+    }
+
+    .tab-summary-item {
+        text-align: center;
+    }
+
+    .tab-summary-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--gray-900);
+    }
+
+    .tab-summary-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        margin-top: 0.25rem;
+    }
+
+    /* Info Grid */
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+
+    @media (max-width: 640px) {
+        .info-grid { grid-template-columns: 1fr; }
+    }
+
+    .info-item {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+    }
+
+    .info-label {
+        font-size: 0.75rem;
+        color: var(--gray-500);
+        text-transform: uppercase;
+        letter-spacing: 0.025em;
+    }
+
+    .info-value {
+        font-size: 0.9375rem;
+        color: var(--gray-900);
+        font-weight: 500;
+    }
+
+    /* Dark mode */
+    .dark .stats-page { background: #0f172a; }
+    .dark .stats-header-left h1 { color: #f1f5f9; }
+    .dark .kpi-card, .dark .chart-card, .dark .tabs-wrapper { 
+        background: #1e293b; 
+        border-color: #334155; 
+    }
+    .dark .kpi-value, .dark .info-value, .dark .tab-summary-value { color: #f1f5f9; }
+    .dark .kpi-label, .dark .kpi-sub, .dark .info-label, .dark .tab-summary-label { color: #94a3b8; }
+    .dark .data-table th { background: #334155; color: #e2e8f0; }
+    .dark .data-table td { color: #e2e8f0; border-color: #334155; }
+    .dark .data-table tbody tr:hover { background: #334155; }
+    .dark .progress-bar { background: #334155; }
+    .dark .tab-btn { color: #94a3b8; }
+    .dark .tab-btn:hover { color: #e2e8f0; }
+    .dark .tabs-nav { border-color: #334155; }
+    .dark .btn-back { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+    .dark .progress-label { color: #e2e8f0; }
+</style>
+{% endblock %}
+
+{% block body %}
+{# ========== CALCULS DES DONNÉES ========== #}
+{% set totalActivities = (entreprise.wp2 ? 1 : 0) + entreprise.wp5Events|length + entreprise.wp5Formations|length + entreprise.wp6|length + entreprise.wp7|length + entreprise.miseEnRelations|length %}
+
+{% set wp6ServiceTotal = 0 %}
+{% set wp6InvoicedTotal = 0 %}
+{% for p in entreprise.wp6 %}
+    {% set wp6ServiceTotal = wp6ServiceTotal + (p.servicePrice|default(0)) %}
+    {% set wp6InvoicedTotal = wp6InvoicedTotal + (p.priceInvoiced|default(0)) %}
+{% endfor %}
+
+{% set wp7ServiceTotal = 0 %}
+{% set wp7ObtainedTotal = 0 %}
+{% for i in entreprise.wp7 %}
+    {% set wp7ServiceTotal = wp7ServiceTotal + (i.servicePrice|default(0)) %}
+    {% set wp7ObtainedTotal = wp7ObtainedTotal + (i.amountObtained|default(0)) %}
+{% endfor %}
+
+{% set relServiceTotal = 0 %}
+{% set relInvoicedTotal = 0 %}
+{% for r in entreprise.miseEnRelations %}
+    {% set relServiceTotal = relServiceTotal + (r.servicePrice|default(0)) %}
+    {% set relInvoicedTotal = relInvoicedTotal + (r.priceInvoiced|default(0)) %}
+{% endfor %}
+
+{% set wp5FormationsTotal = 0 %}
+{% for f in entreprise.wp5Formations %}
+    {% set wp5FormationsTotal = wp5FormationsTotal + (f.servicePrice|default(0)) %}
+{% endfor %}
+
+{% set totalServicePrice = wp6ServiceTotal + wp7ServiceTotal + relServiceTotal + wp5FormationsTotal %}
+{% set totalInvoiced = wp6InvoicedTotal + relInvoicedTotal %}
+{% set invoiceRate = totalServicePrice > 0 ? ((totalInvoiced / totalServicePrice) * 100)|round : 0 %}
+
+{% set totalParticipants = 0 %}
+{% for event in entreprise.wp5Events %}
+    {% set totalParticipants = totalParticipants + (event.attendeesNumber|default(0)) %}
+{% endfor %}
+
+{# Score d'engagement (0-100) basé sur les WP remplis #}
+{% set engagementScore = 0 %}
+{% if entreprise.wp2 %}{% set engagementScore = engagementScore + 20 %}{% endif %}
+{% if entreprise.wp5Events|length > 0 %}{% set engagementScore = engagementScore + 15 %}{% endif %}
+{% if entreprise.wp5Formations|length > 0 %}{% set engagementScore = engagementScore + 15 %}{% endif %}
+{% if entreprise.wp6|length > 0 %}{% set engagementScore = engagementScore + 20 %}{% endif %}
+{% if entreprise.wp7|length > 0 %}{% set engagementScore = engagementScore + 15 %}{% endif %}
+{% if entreprise.miseEnRelations|length > 0 %}{% set engagementScore = engagementScore + 15 %}{% endif %}
+
+<div class="stats-page" data-controller="entreprise-stats">
+    
+    {# ========== HEADER ========== #}
+    <div class="stats-header">
+        <div class="stats-header-left">
+            <h1>
+                <span class="status-dot {{ entreprise.statut|default('vert') }}"></span>
+                {{ entreprise.nom }}
+            </h1>
+            <div class="stats-header-meta">
+                <span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                    {{ entreprise.typeStructure|default('—') }}
+                </span>
+                <span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    {{ entreprise.ville|default('—') }}{% if entreprise.pays %}, {{ entreprise.pays }}{% endif %}
+                </span>
+                <span>
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/></svg>
+                    {{ entreprise.secteur|default('—') }}
+                </span>
+            </div>
+        </div>
+        <a href="{{ path('app_administration_dashboard') }}" class="btn-back" data-turbo="false">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            {{ 'app.entreprise_stats.back'|trans }}
+        </a>
+    </div>
+
+    {# ========== KPI CARDS ========== #}
+    <div class="kpi-grid">
+        <div class="kpi-card blue">
+            <div class="kpi-label">{{ 'app.entreprise_stats.engagement_score'|trans }}</div>
+            <div class="kpi-value">{{ engagementScore }}%</div>
+            <div class="kpi-sub">{{ 'app.entreprise_stats.wp_participation'|trans }}</div>
+        </div>
+        <div class="kpi-card green">
+            <div class="kpi-label">{{ 'app.entreprise_stats.billing_rate'|trans }}</div>
+            <div class="kpi-value">{{ invoiceRate }}%</div>
+            <div class="kpi-sub">{{ totalInvoiced|number_format(0, ',', ' ') }}€ / {{ totalServicePrice|number_format(0, ',', ' ') }}€</div>
+        </div>
+        <div class="kpi-card purple">
+            <div class="kpi-label">{{ 'app.entreprise_stats.total_activities'|trans }}</div>
+            <div class="kpi-value">{{ totalActivities }}</div>
+            <div class="kpi-sub">{{ 'app.entreprise_stats.all_wp_combined'|trans }}</div>
+        </div>
+        <div class="kpi-card orange">
+            <div class="kpi-label">{{ 'app.entreprise_stats.funding_obtained'|trans }}</div>
+            <div class="kpi-value">{{ wp7ObtainedTotal|number_format(0, ',', ' ') }}€</div>
+            <div class="kpi-sub">{{ entreprise.wp7|length }} {{ entreprise.wp7|length > 1 ? 'app.entreprise_stats.investments'|trans : 'app.entreprise_stats.investment'|trans }}</div>
+        </div>
+        <div class="kpi-card pink">
+            <div class="kpi-label">{{ 'app.entreprise_stats.event_participants'|trans }}</div>
+            <div class="kpi-value">{{ totalParticipants }}</div>
+            <div class="kpi-sub">{{ entreprise.wp5Events|length }} {{ entreprise.wp5Events|length > 1 ? 'app.entreprise_stats.events'|trans : 'app.entreprise_stats.event'|trans }} {{ 'app.entreprise_stats.wp5'|trans }}</div>
+        </div>
+    </div>
+
+    {# ========== CHARTS ROW 1 ========== #}
+    <div class="charts-row">
+        {# Répartition des activités #}
+        <div class="chart-card">
+            <h3>
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+                {{ 'app.entreprise_stats.activity_distribution'|trans }}
+            </h3>
+            <div class="chart-container" id="wpDistributionChart" data-entreprise-stats-target="wpDistribution"></div>
+        </div>
+
+        {# Valeur financière #}
+        <div class="chart-card">
+            <h3>
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                {{ 'app.entreprise_stats.financial_value'|trans }}
+            </h3>
+            <div class="chart-container" id="financialChart" data-entreprise-stats-target="financial"></div>
+        </div>
+    </div>
+
+    {# ========== CHARTS ROW 2 (si WP2 existe) ========== #}
+    {% if entreprise.wp2 %}
+    <div class="charts-row">
+        {# Radar DMAO #}
+        <div class="chart-card">
+            <h3>
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                {{ 'app.entreprise_stats.dmao_diagnostic'|trans }}
+            </h3>
+            <div class="chart-container" id="wp2RadarChart" data-entreprise-stats-target="wp2Radar"></div>
+        </div>
+
+        {# Détails DMAO #}
+        <div class="chart-card">
+            <h3>
+                <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+                {{ 'app.entreprise_stats.dmao_detailed_scores'|trans }}
+            </h3>
+            <div class="progress-list" style="padding: 0.5rem 0;">
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ 'app.entreprise_stats.digital_strategy'|trans }}</span>
+                        <span class="progress-value">{{ entreprise.wp2.digitalStrategy|default(0) }}/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (entreprise.wp2.digitalStrategy|default(0) / 5) * 100 }}%; background: #3b82f6;"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ 'app.entreprise_stats.digital_readiness'|trans }}</span>
+                        <span class="progress-value">{{ entreprise.wp2.digitalReadiness|default(0) }}/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (entreprise.wp2.digitalReadiness|default(0) / 5) * 100 }}%; background: #22c55e;"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ 'app.entreprise_stats.human_centric'|trans }}</span>
+                        <span class="progress-value">{{ entreprise.wp2.humanCentric|default(0) }}/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (entreprise.wp2.humanCentric|default(0) / 5) * 100 }}%; background: #10b981;"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ 'app.entreprise_stats.data_governance'|trans }}</span>
+                        <span class="progress-value">{{ entreprise.wp2.dataGovernance|default(0) }}/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (entreprise.wp2.dataGovernance|default(0) / 5) * 100 }}%; background: #8b5cf6;"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ 'app.entreprise_stats.artificial_intelligence'|trans }}</span>
+                        <span class="progress-value">{{ entreprise.wp2.ai|default(0) }}/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (entreprise.wp2.ai|default(0) / 5) * 100 }}%; background: #f97316;"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-header">
+                        <span class="progress-label">{{ 'app.entreprise_stats.green_sustainability'|trans }}</span>
+                        <span class="progress-value">{{ entreprise.wp2.green|default(0) }}/5</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: {{ (entreprise.wp2.green|default(0) / 5) * 100 }}%; background: #16a34a;"></div>
+                    </div>
+                </div>
+            </div>
+            <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--gray-100); display: flex; gap: 2rem;">
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--gray-500);">{{ 'app.entreprise_stats.score_dmao'|trans }}</div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--primary);">{{ entreprise.wp2.scoreDmao|default('—') }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.75rem; color: var(--gray-500);">{{ 'app.entreprise_stats.score_dma1'|trans }}</div>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--purple);">{{ entreprise.wp2.scoreDma1|default('—') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {# ========== Service vs Facturé ========== #}
+    <div class="chart-card" style="margin-bottom: 1.5rem;">
+        <h3>
+            <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            {{ 'app.entreprise_stats.service_vs_invoiced'|trans }}
+        </h3>
+        <div class="chart-container small" id="serviceVsInvoicedChart" data-entreprise-stats-target="serviceVsInvoiced"></div>
+    </div>
+
+    {# ========== TABS DÉTAILLÉS ========== #}
+    <div class="tabs-wrapper">
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="tab-wp5">{{ 'app.entreprise_stats.tab_wp5'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-wp6">{{ 'app.entreprise_stats.tab_wp6'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-wp7">{{ 'app.entreprise_stats.tab_wp7'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-relations">{{ 'app.entreprise_stats.tab_relations'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-info">{{ 'app.entreprise_stats.tab_info'|trans }}</button>
+        </div>
+
+        {# Tab: WP5 #}
+        <div id="tab-wp5" class="tab-content active">
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem;">
+                {# Events #}
+                <div>
+                    <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin: 0 0 1rem 0;">
+                        {{ 'app.entreprise_stats.events_title'|trans }} ({{ entreprise.wp5Events|length }})
+                    </h4>
+                    {% if entreprise.wp5Events|length > 0 %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>{{ 'app.entreprise_stats.event_name'|trans }}</th>
+                                <th>{{ 'app.entreprise_stats.date'|trans }}</th>
+                                <th>{{ 'app.entreprise_stats.participants'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for event in entreprise.wp5Events %}
+                            <tr>
+                                <td>{{ event.eventNameEnglish|default('—') }}</td>
+                                <td>{{ event.startDate ? event.startDate|date('d/m/Y') : '—' }}</td>
+                                <td><span class="badge badge-green">{{ event.attendeesNumber|default(0) }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state" style="padding: 2rem;">
+                        <p>{{ 'app.entreprise_stats.no_event'|trans }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+
+                {# Formations #}
+                <div>
+                    <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--gray-700); margin: 0 0 1rem 0;">
+                        {{ 'app.entreprise_stats.formations_title'|trans }} ({{ entreprise.wp5Formations|length }})
+                    </h4>
+                    {% if entreprise.wp5Formations|length > 0 %}
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>{{ 'app.entreprise_stats.technology'|trans }}</th>
+                                <th>{{ 'app.entreprise_stats.responsible'|trans }}</th>
+                                <th>{{ 'app.entreprise_stats.price'|trans }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for formation in entreprise.wp5Formations %}
+                            <tr>
+                                <td><span class="badge badge-blue">{{ formation.technology|default('—') }}</span></td>
+                                <td>{{ formation.responsible|default('—') }}</td>
+                                <td>{{ formation.servicePrice|default(0) }}€</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="empty-state" style="padding: 2rem;">
+                        <p>{{ 'app.entreprise_stats.no_formation'|trans }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-summary">
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ entreprise.wp5Events|length }}</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.events_title'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ totalParticipants }}</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_participants'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ entreprise.wp5Formations|length }}</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.formations_title'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ wp5FormationsTotal|number_format(0, ',', ' ') }}€</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_formations'|trans }}</div>
+                </div>
+            </div>
+        </div>
+
+        {# Tab: WP6 #}
+        <div id="tab-wp6" class="tab-content">
+            {% if entreprise.wp6|length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'app.entreprise_stats.technology'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.responsible'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.start_date'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.end_date'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.service_price'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.invoiced'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for project in entreprise.wp6 %}
+                    <tr>
+                        <td><span class="badge badge-purple">{{ project.technology|default('—') }}</span></td>
+                        <td>{{ project.responsible|default('—') }}</td>
+                        <td>{{ project.startDate ? project.startDate|date('d/m/Y') : '—' }}</td>
+                        <td>{{ project.finishDate ? project.finishDate|date('d/m/Y') : '—' }}</td>
+                        <td>{{ project.servicePrice|default(0)|number_format(0, ',', ' ') }}€</td>
+                        <td>{{ project.priceInvoiced|default(0)|number_format(0, ',', ' ') }}€</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="tab-summary">
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ entreprise.wp6|length }}</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.projects'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ wp6ServiceTotal|number_format(0, ',', ' ') }}€</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_service_price'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ wp6InvoicedTotal|number_format(0, ',', ' ') }}€</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_invoiced'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ wp6ServiceTotal > 0 ? ((wp6InvoicedTotal / wp6ServiceTotal) * 100)|round : 0 }}%</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.billing_rate_label'|trans }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+                <p>{{ 'app.entreprise_stats.no_wp6_project'|trans }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {# Tab: WP7 #}
+        <div id="tab-wp7" class="tab-content">
+            {% if entreprise.wp7|length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'app.entreprise_stats.type'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.responsible'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.funding_source'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.amount_obtained'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.service_price'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invest in entreprise.wp7 %}
+                    <tr>
+                        <td><span class="badge badge-orange">{{ invest.typeInvestment|default('—') }}</span></td>
+                        <td>{{ invest.responsible|default('—') }}</td>
+                        <td>{{ invest.sourceFinancing|default('—') }}</td>
+                        <td>{{ invest.amountObtained|default(0)|number_format(0, ',', ' ') }}€</td>
+                        <td>{{ invest.servicePrice|default(0)|number_format(0, ',', ' ') }}€</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="tab-summary">
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ entreprise.wp7|length }}</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.investments'|trans|capitalize }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ wp7ObtainedTotal|number_format(0, ',', ' ') }}€</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_amount_obtained'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ wp7ServiceTotal|number_format(0, ',', ' ') }}€</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_service_price'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ wp7ServiceTotal > 0 ? ((wp7ObtainedTotal / wp7ServiceTotal))|round(1) : 0 }}x</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.funding_roi'|trans }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p>{{ 'app.entreprise_stats.no_wp7_investment'|trans }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {# Tab: Relations #}
+        <div id="tab-relations" class="tab-content">
+            {% if entreprise.miseEnRelations|length > 0 %}
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>{{ 'app.entreprise_stats.technology'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.responsible'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.service_price'|trans }}</th>
+                        <th>{{ 'app.entreprise_stats.invoiced'|trans }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for relation in entreprise.miseEnRelations %}
+                    <tr>
+                        <td><span class="badge badge-pink">{{ relation.technology|default('—') }}</span></td>
+                        <td>{{ relation.responsible|default('—') }}</td>
+                        <td>{{ relation.servicePrice|default(0)|number_format(0, ',', ' ') }}€</td>
+                        <td>{{ relation.priceInvoiced|default(0)|number_format(0, ',', ' ') }}€</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+
+            <div class="tab-summary">
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ entreprise.miseEnRelations|length }}</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.relations'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ relServiceTotal|number_format(0, ',', ' ') }}€</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_service_price'|trans }}</div>
+                </div>
+                <div class="tab-summary-item">
+                    <div class="tab-summary-value">{{ relInvoicedTotal|number_format(0, ',', ' ') }}€</div>
+                    <div class="tab-summary-label">{{ 'app.entreprise_stats.total_invoiced'|trans }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <p>{{ 'app.entreprise_stats.no_relation'|trans }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        {# Tab: Info #}
+        <div id="tab-info" class="tab-content">
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.name'|trans }}</span>
+                    <span class="info-value">{{ entreprise.nom }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.siret'|trans }}</span>
+                    <span class="info-value">{{ entreprise.siret|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.structure_type'|trans }}</span>
+                    <span class="info-value">{{ entreprise.typeStructure|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.sector'|trans }}</span>
+                    <span class="info-value">{{ entreprise.secteur|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.creation_year'|trans }}</span>
+                    <span class="info-value">{{ entreprise.anneeCreation|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.size'|trans }}</span>
+                    <span class="info-value">{{ entreprise.taille|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.revenue'|trans }}</span>
+                    <span class="info-value">{{ entreprise.chiffreAffaires|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.edih_year'|trans }}</span>
+                    <span class="info-value">{{ entreprise.anneeEdih|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.address'|trans }}</span>
+                    <span class="info-value">{{ entreprise.adresse|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.postal_code'|trans }}</span>
+                    <span class="info-value">{{ entreprise.codePostal|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.city'|trans }}</span>
+                    <span class="info-value">{{ entreprise.ville|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.region'|trans }}</span>
+                    <span class="info-value">{{ entreprise.region|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.country'|trans }}</span>
+                    <span class="info-value">{{ entreprise.pays|default('—') }}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">{{ 'app.entreprise_stats.creation_date'|trans }}</span>
+                    <span class="info-value">{{ entreprise.createdAt ? entreprise.createdAt|date('d/m/Y') : '—' }}</span>
+                </div>
+            </div>
+            {% if entreprise.description %}
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--gray-100);">
+                <span class="info-label" style="display: block; margin-bottom: 0.5rem;">{{ 'app.entreprise_stats.description'|trans }}</span>
+                <p style="color: var(--gray-700); line-height: 1.6;">{{ entreprise.description }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+<script>
+// Chart data for Stimulus controller - must be defined BEFORE Stimulus loads
+window.chartData = {
+    wpDistribution: {
+        labels: ['WP2 DMAO', 'WP5 Events', 'WP5 Formations', 'WP6 Projets', 'WP7 Investissements', 'Relations'],
+        values: [
+            {{ entreprise.wp2 ? 1 : 0 }},
+            {{ entreprise.wp5Events|length }},
+            {{ entreprise.wp5Formations|length }},
+            {{ entreprise.wp6|length }},
+            {{ entreprise.wp7|length }},
+            {{ entreprise.miseEnRelations|length }}
+        ],
+        colors: ['#3b82f6', '#22c55e', '#10b981', '#8b5cf6', '#f97316', '#ec4899']
+    },
+    financial: {
+        labels: ['WP5 Formations', 'WP6 Projets', 'WP7 Investissements', 'Relations'],
+        values: [
+            {% set jsWp5FormTotal = 0 %}{% for f in entreprise.wp5Formations %}{% set jsWp5FormTotal = jsWp5FormTotal + (f.servicePrice|default(0)) %}{% endfor %}{{ jsWp5FormTotal }},
+            {% set jsWp6Total = 0 %}{% for p in entreprise.wp6 %}{% set jsWp6Total = jsWp6Total + (p.servicePrice|default(0)) %}{% endfor %}{{ jsWp6Total }},
+            {% set jsWp7Total = 0 %}{% for i in entreprise.wp7 %}{% set jsWp7Total = jsWp7Total + (i.servicePrice|default(0)) %}{% endfor %}{{ jsWp7Total }},
+            {% set jsRelTotal = 0 %}{% for r in entreprise.miseEnRelations %}{% set jsRelTotal = jsRelTotal + (r.servicePrice|default(0)) %}{% endfor %}{{ jsRelTotal }}
+        ],
+        colors: ['#22c55e', '#8b5cf6', '#f97316', '#ec4899']
+    },
+    serviceVsInvoiced: {
+        categories: ['WP6 Projets', 'Relations'],
+        service: [
+            {% set jsWp6Svc = 0 %}{% for p in entreprise.wp6 %}{% set jsWp6Svc = jsWp6Svc + (p.servicePrice|default(0)) %}{% endfor %}{{ jsWp6Svc }},
+            {% set jsRelSvc = 0 %}{% for r in entreprise.miseEnRelations %}{% set jsRelSvc = jsRelSvc + (r.servicePrice|default(0)) %}{% endfor %}{{ jsRelSvc }}
+        ],
+        invoiced: [
+            {% set jsWp6Inv = 0 %}{% for p in entreprise.wp6 %}{% set jsWp6Inv = jsWp6Inv + (p.priceInvoiced|default(0)) %}{% endfor %}{{ jsWp6Inv }},
+            {% set jsRelInv = 0 %}{% for r in entreprise.miseEnRelations %}{% set jsRelInv = jsRelInv + (r.priceInvoiced|default(0)) %}{% endfor %}{{ jsRelInv }}
+        ]
+    },
+    wp2Radar: {
+        labels: ['Digital Strategy', 'Digital Readiness', 'Human Centric', 'Data Governance', 'IA', 'Green'],
+        values: [
+            {{ entreprise.wp2 ? entreprise.wp2.digitalStrategy|default(0) : 0 }},
+            {{ entreprise.wp2 ? entreprise.wp2.digitalReadiness|default(0) : 0 }},
+            {{ entreprise.wp2 ? entreprise.wp2.humanCentric|default(0) : 0 }},
+            {{ entreprise.wp2 ? entreprise.wp2.dataGovernance|default(0) : 0 }},
+            {{ entreprise.wp2 ? entreprise.wp2.ai|default(0) : 0 }},
+            {{ entreprise.wp2 ? entreprise.wp2.green|default(0) : 0 }}
+        ]
+    }
+};
+</script>
+{{ parent() }}
+<script>
+// Tab navigation
+document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const tabId = btn.dataset.tab;
+        
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        
+        btn.classList.add('active');
+        document.getElementById(tabId).classList.add('active');
+    });
+});
+</script>
+{% endblock %}

@@ -7,12 +7,15 @@ app:
     profile: Profile
     cancel: Cancel
     back: Back
+    back_dashboard: Back to Dashboard
     create: Create
+    created: Created on
     edit: Edit
     delete: Delete
     save: Save
     submit: Submit
     search: Search
+    show: Show
     date_time: Date/Time
     user: User
     action: Action
@@ -57,6 +60,9 @@ app:
     partners_management: Partners Management
     edit_partner: Edit Partner
     modify: Edit
+    filter: Filter
+    save_changes: Save changes
+    saving: Saving...
 
   js:
     users:
@@ -91,10 +97,11 @@ app:
     quit: Quit
     total_users: Total Users
     active_users: Active Users
-    processed_files: Processed Files
-    conversion_rate: Conversion Rate
+    total_partenaires: Total Partners
+    conversion_rate: Activation Rate
     logs: Logs
     recent_activity: Recent Activity
+    no_recent_activity: No recent activity
     edit: Edit
     delete: Delete
     management: Partners Management
@@ -107,6 +114,7 @@ app:
     dashboard_title: Administration Dashboard
     statistics: Statistics
     create_company: Company Creation
+    edit_company: Edit Company
     work_package: Work Package
     year: Year
     partners: Partners
@@ -119,7 +127,304 @@ app:
     country: Country
     details: Details
     no_data: No data available
+    reset_filters: Reset Filters
+    showing: Showing
+    of: of
+    confirm_delete: Are you sure you want to delete this company?
+    filter_by: Filter by size
+    filters: Filters
+    filter_size: Size
+    all_years: All years
+    table:
+      company_name: Company Name
+      sector: Sector
+      city: City
+      size: Size
+      year: Year
+    # Index page
+    work_packages: Work Packages
+    no_work_package: No Work Package
+    add_wp_hint: Add WPs via the edit page
+    items: item(s)
+    close: Close
+    close_menu: Close menu
+    actions: Actions
+    no_cancel: No, cancel
+    yes_delete: Yes, delete
+    networking: Networking
+    events: Events
+    formations: Training
+    projects: Projects
+    investments: Investments
+    networking_relations: Networking Relations
+    score: Score
+    # WP names
+    wp2_dmao: WP2 - DMAO
+    wp5_events: WP5 - Events
+    wp5_formations: WP5 - Training
+    wp6_projects: WP6 - Projects
+    wp7_investments: WP7 - Investments
+    # WP details labels
+    digital_strategy: Digital Business Strategy
+    digital_readiness: Digital Readiness
+    human_centric: Human Centric Digitalisation
+    data_governance: Data Governance
+    automation_ai: Automation & Artificial Intelligence
+    green_digitalisation: Green Digitalisation
+    start_date: Start Date
+    end_date: End Date
+    service_category: Service Category
+    main_technologies: Main Technologies
+    subject: Subject
+    amount_trigger: Trigger Amount
+    amount_obtained: Amount Obtained
+    financing_source: Financing Source
+    investment_type: Investment Type
+  
+  statistics:
+    title: General Statistics
+    subtitle: Analytics and Trends
+    back: Back
+    # KPI cards
+    companies: Companies
+    work_packages: Work Packages
+    avg_wp_company: Avg WP/Company
+    partners: Partners
+    # Tabs
+    tab_overview: Overview
+    tab_distribution: Distribution
+    tab_evolution: Evolution
+    tab_averages: Averages
+    tab_partners: Partners
+    tab_details: Details
+    # Overview tab
+    wp_distribution: Work Package Distribution
+    company_status: Company Status
+    complete: Complete
+    complete_desc: 3+ WP
+    partial: Partial
+    partial_desc: 1-2 WP
+    empty: Empty
+    empty_desc: 0 WP
+    monthly_trend: Monthly Trend
+    # Distribution tab
+    activity_sectors: Activity Sectors
+    city_distribution: Distribution by City
+    company_size: Company Size
+    sector_detail: Sector Detail
+    sector: Sector
+    count: Count
+    percent: "%"
+    # Evolution tab
+    yearly_evolution: Yearly Evolution
+    wp_by_year: Work Packages by Year (stacked)
+    companies_created: companies created
+    # Averages tab
+    avg_radar: Average Radar by WP
+    avg_detailed: Detailed Averages
+    avg_total: Total Average WP / Company
+    compare_totals: Total Comparison
+    type: Type
+    total: Total
+    average: Average
+    percent_total: "% of total"
+    progression: Progression
+    relations: Relations
+    # Partners tab
+    companies_by_partner: Companies by Partner
+    partner_detail: Partner Detail
+    partner: Partner
+    total_wp: Total WP
+    # Details tab
+    top_companies: Top 10 Companies (WP)
+    top_cities: Top Cities
+    top_sectors: Top Sectors
+    all_companies: All Companies
+    company: Company
+    year: Year
+    rel: Rel.
+    showing_first: Showing first %count% of %total% companies
+  
+  show_entreprise:
+    title: Company Details
+    description: View detailed company information
+  
+  edit_entreprise:
+    title: Edit Company
+    history: History
+    delete_company: Delete Company
+    total_wp: Work Packages
+    size: Size
+    sector: Sector
+    back_dashboard: Back to Dashboard
+    manage_info: Manage information and associated Work Packages
+    
+    # Sections
+    general_info: General Information
+    modules_wp: Modules & Work Packages
+    
+    # Labels
+    company_name: Company Name
+    siret: SIRET
+    type_structure: Structure Type
+    creation_year: Creation Year
+    sector_activity: Sector
+    description: Description
+    address: Address
+    postal_code: Postal Code
+    city: City
+    country: Country
+    save: Save
+    
+    # Modules
+    wp2_title: WP2 - DMAO
+    wp2_diagnostic: DMAO Diagnostic
+    wp2_audit: Audit
+    wp2_initialize: Initialize WP2 Diagnostic
+    wp2_none: No WP2 Diagnostic
+    wp2_create: Create WP2
+    wp2_update: Update WP2
+    wp2_score: Score
+    wp2_strategy: Strategy
+    
+    wp5_title: WP5 - Events & Training
+    wp5_event: Event
+    wp5_formation: Training
+    wp5_new_event: New Event
+    wp5_new_formation: New Training
+    wp5_add_event: Add Event
+    wp5_add_formation: Add Training
+    
+    wp6_title: WP6 - Projects
+    wp6_project: Project
+    wp6_new_project: New Project
+    wp6_add: Add WP6 Project
+    
+    wp7_title: WP7 - Financing
+    wp7_invest: Invest.
+    wp7_new_invest: New Invest.
+    wp7_add: Add Investment
+    
+    relation_title: Networking
+    relation_new: New Relation
+    relation_add: Add Relation
+    
+    # Form labels
+    score_dmao: DMAO Score
+    digital_strategy: Digital Strategy
+    digital_readiness: Digital Readiness
+    human_centric: Human Centric
+    data_governance: Data Governance
+    ai: AI
+    green: Green
+    score_dma1: DMA1 Score
+    
+    event_name_en: Name (EN)
+    event_name_orig: Name (Original)
+    start_date: Start
+    end_date: End
+    participants: Participants
+    
+    responsible: Responsible
+    technology: Technology
+    service_price: Service Price
+    price_invoiced: Price Invoiced
+    finish_date: End
+    
+    type_invest: Type
+    source_financing: Financing
+    amount_trigger: Trigger
+    amount_obtained: Obtained
+    
+    subject: Subject
+    
+    # Actions
+    create: Create
+    cancel: Cancel
+    ok: OK
+    
+    # Messages
+    confirm_delete: Are you sure you want to delete
+    
+    # Module selection
+    activate_modules: Activate modules for this company:
+    networking_label: Networking
+    
+    # Tabs
+    tab_info: Information
+    tab_relation: Networking
+    
+    # Company info
+    company_information: Company Information
+    location_info: Location
+    
+    # Work packages (legacy - kept for compatibility)
+    wp2_scores: DMAO Assessment Scores
+    add_wp2: Add WP2
+    no_wp2: No DMAO Assessment
+    no_wp2_desc: Start by adding a digital maturity assessment
+    
+    add_event: Add Event
+    add_formation: Add Training
+    no_wp5: No events or training
+    no_wp5_desc: Start by adding events or training
+    
+    add_wp6: Add WP6
+    no_wp6: No innovation services
+    no_wp6_desc: Start by adding innovation support services
+    
+    add_wp7: Add WP7
+    no_wp7: No financing
+    no_wp7_desc: Start by adding financing opportunities
+    
+    networking: Networking
+    add_relation: Add Relation
+    no_relation: No networking
+    no_relation_desc: Start by adding networking connections
+    
+    # Confirmations
+    confirm_delete_wp: Are you sure you want to delete this work package?
+    confirm_delete_company: Are you sure you want to delete this company? This action is irreversible.
+    no_data: No data available
     reset_filters: Reset filters
+    
+    # Page header (new)
+    page_title: "Edit - %name%"
+    subtitle: Edit information
+    back: Back
+    
+    # Status card (new)
+    no_wp: No Work Package
+    wp_count: "%count% Work Package(s)"
+    wp_count_plural: "%count% Work Packages"
+    add_wp_hint: Add WP to complete this record
+    
+    # Section tabs (new)
+    wp2_dmao: WP2 - DMAO
+    wp5_events: WP5 - Events
+    wp5_formations: WP5 - Training
+    wp6_projects: WP6 - Projects
+    wp7_investments: WP7 - Investments
+    relations: Networking
+    
+    # WP2 diagnostic (new)
+    dmao_diagnostic: DMAO Diagnostic
+    
+    # Confirm messages (new)
+    confirm_delete_wp2: "Delete WP2?"
+    confirm_delete_event: "Delete this event?"
+    confirm_delete_formation: "Delete this training?"
+    confirm_delete_project: "Delete this project?"
+    confirm_delete_investment: "Delete this investment?"
+    confirm_delete_relation: "Delete this relation?"
+    
+    # Default titles (new)
+    default_event: Event
+    default_formation: Training
+    default_project: Project
+    default_investment: Investment
+    default_relation: Relation
+    
   create_entreprise:
     title: Company Creation
     description: Fill in your company information by following the steps
@@ -147,13 +452,16 @@ app:
     select_owner: Select an owner
     assign_partner: Assign to partner
     use_my_partner: Use my partner
+    leave_empty_use_partner: Leave empty to use your partner
     company_name: Company Name
     edih_year: EDIH Year
     structure_type: Structure Type
     select_structure: Select structure type
     creation_year: Creation Year
+    sector: Business Sector
     activity_sector: Sector
     siret: SIRET
+    size: Company Size
     company_size: Size
     select_size: Select size
     employees: employees
@@ -179,6 +487,19 @@ app:
     wp2_score_dma1: DMA1 Score
     
     # WP5 Event
+    wp5_event_name_english: Event name (EN)
+    wp5_event_name_original: Event name (original language)
+    wp5_event_edih_organiser: EDIH Co-organiser
+    wp5_event_co_organiser: Co-organiser
+    wp5_event_start_date: Start date
+    wp5_event_end_date: End date
+    wp5_event_attendees: Number of attendees
+    wp5_event_delivery_mode: Delivery mode
+    wp5_event_website: Event website
+    wp5_event_service_category: Service category
+    wp5_event_technologies: Main technologies
+    wp5_event_sectors: Main sectors
+    wp5_event_description: Event description
     wp5_year: Year
     wp5_event_passage: Selection committee passage
     wp5_responsible: WP5 Responsible
@@ -243,14 +564,57 @@ app:
 
   home:
     title: Home
-    welcome: Welcome to CITC
+    welcome: Welcome to DataSimplify
+    subtitle: Your simplified data management platform
+    description: DataSimplify allows you to manage your data simply and efficiently.
+    get_started: Get Started
+    learn_more: Learn More
     
   profile:
-    title: Profile
+    title: My Profile
+    information: Information
+    edit_information: Edit Information
+    change_password: Change Password
+    password_security: Ensure your password is strong and secure
+    username_cannot_change: Username cannot be changed
+    current_password: Current Password
+    new_password: New Password
+    confirm_password: Confirm Password
+    update_password: Update Password
     email: Email
     username: Username
     firstname: First Name
     lastname: Last Name
+    subtitle: Update your profile information
+    address: Address
+    description: Description
+    
+    # Section 1
+    company_name: Company Name
+    siret: SIRET
+    activity_sector: Business Sector
+    city: City
+    postal_code: Postal Code
+    country: Country
+    france: France
+    
+    # Section 2
+    phone_main: Main Phone
+    phone_secondary: Secondary Phone
+    email_main: Main Email
+    email_secondary: Secondary Email
+    website: Website
+    linkedin: LinkedIn
+    headquarters_address: Headquarters Address
+    
+    # Section 3
+    first_name: First Name
+    last_name: Last Name
+    position: Position
+    start_date: Start Date
+    notes: Notes
+    
+    required: "* Required field"
 
   auth:
     login: Login
@@ -263,3 +627,116 @@ app:
 
   footer:
     copyright: "© 2026 CITC. All rights reserved."
+
+  entreprise_stats:
+    page_title: "Statistics - %name%"
+    back: Back
+    
+    # KPI Cards
+    engagement_score: Engagement Score
+    wp_participation: Work Package Participation
+    billing_rate: Billing Rate
+    total_activities: Total Activities
+    all_wp_combined: All Work Packages Combined
+    funding_obtained: Funding Obtained (WP7)
+    investment: investment
+    investments: investments
+    event_participants: Event Participants
+    event: event
+    events: events
+    wp5: WP5
+    
+    # Charts
+    activity_distribution: Activity Distribution by WP
+    financial_value: Financial Value by Type
+    dmao_diagnostic: DMAO Diagnostic (WP2)
+    dmao_detailed_scores: Detailed DMAO Scores
+    service_vs_invoiced: Service vs Invoiced Comparison by Category
+    
+    # DMAO Labels
+    digital_strategy: Digital Strategy
+    digital_readiness: Digital Readiness
+    human_centric: Human Centric
+    data_governance: Data Governance
+    artificial_intelligence: Artificial Intelligence
+    green_sustainability: Green / Sustainability
+    score_dmao: DMAO Score
+    score_dma1: DMA1 Score
+    
+    # WP Labels
+    wp2_dmao: WP2 DMAO
+    wp5_events: WP5 Events
+    wp5_formations: WP5 Trainings
+    wp6_projects: WP6 Projects
+    wp7_investments: WP7 Investments
+    relations: Relations
+    
+    # Tabs
+    tab_wp5: WP5 - Events & Trainings
+    tab_wp6: WP6 - Projects
+    tab_wp7: WP7 - Investments
+    tab_relations: Business Connections
+    tab_info: Information
+    
+    # WP5 Tab
+    events_title: Events
+    formations_title: Trainings
+    event_name: Event
+    date: Date
+    participants: Participants
+    technology: Technology
+    responsible: Manager
+    price: Price
+    no_event: No events
+    no_formation: No trainings
+    total_participants: Total Participants
+    total_formations: Total Trainings
+    
+    # WP6 Tab
+    start_date: Start Date
+    end_date: End Date
+    service_price: Service Price
+    invoiced: Invoiced
+    no_wp6_project: No WP6 projects
+    projects: Projects
+    total_service_price: Total Service Price
+    total_invoiced: Total Invoiced
+    billing_rate_label: Billing Rate
+    
+    # WP7 Tab
+    type: Type
+    funding_source: Funding Source
+    amount_obtained: Amount Obtained
+    no_wp7_investment: No WP7 investments
+    total_amount_obtained: Total Amount Obtained
+    funding_roi: Funding ROI
+    
+    # Relations Tab
+    no_relation: No business connections
+    
+    # Info Tab
+    name: Name
+    siret: SIRET
+    structure_type: Structure Type
+    sector: Sector
+    creation_year: Year of Creation
+    size: Size
+    revenue: Revenue
+    edih_year: EDIH Year
+    address: Address
+    postal_code: Postal Code
+    city: City
+    region: Region
+    country: Country
+    creation_date: Record Creation Date
+    description: Description
+
+error:
+  404:
+    title: Page Not Found
+    message: Sorry, the page you are looking for does not exist or has been moved.
+    back_home: Back to Home
+    go_back: Go Back
+  general:
+    title: An Error Occurred
+    message: Sorry, an unexpected error has occurred. Please try again later.

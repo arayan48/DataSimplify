@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Repository\LogRepository;
 use App\Service\PartenaireJsonService;
+use App\Service\LogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,6 +14,10 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Validator\Constraints as Assert;
 
 final class AdminController extends AbstractController
 {
@@ -19,11 +25,38 @@ final class AdminController extends AbstractController
         'fr' => '/administrateur/tableau-de-bord',
         'en' => '/administrator/dashboard'
     ], name: 'app_admin_dashboard')]
-    public function index(): Response
+    public function index(
+        UserRepository $userRepository, 
+        PartenaireJsonService $partenaireService,
+        LogRepository $logRepository
+    ): Response
     {
+        // Récupérer tous les utilisateurs
+        $allUsers = $userRepository->findAll();
+        
+        // Calculer les statistiques
+        $totalUsers = count($allUsers);
+        
+        // Compter les utilisateurs actifs (ayant au moins un rôle autre que ROLE_USER)
+        $activeUsers = count(array_filter($allUsers, function($user) {
+            $roles = $user->getRoles();
+            return count(array_diff($roles, ['ROLE_USER'])) > 0;
+        }));
+        
+        // Compter les partenaires
+        $partenaires = $partenaireService->findAll();
+        $totalPartenaires = count($partenaires);
+        
+        // Récupérer les logs récents
+        $logs = $logRepository->findRecent(20);
+        
         return $this->render('admin/index.html.twig', [
-            'logs' => [],
-            'recentActivities' => [],
+            'totalUsers' => $totalUsers,
+            'activeUsers' => $activeUsers,
+            'totalPartenaires' => $totalPartenaires,
+            'conversionRate' => $totalUsers > 0 ? round(($activeUsers / $totalUsers) * 100) . '%' : '0%',
+            'logs' => $logs,
+            'recentActivities' => array_slice($logs, 0, 5),
         ]);
     }
 
@@ -63,31 +96,65 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/administrateur/users/delete', name: 'app_admin_users_delete', methods: ['POST'])]
-    public function deleteUsers(Request $request, EntityManagerInterface $em): JsonResponse
+    public function deleteUsers(
+        Request $request, 
+        EntityManagerInterface $em, 
+        CsrfTokenManagerInterface $csrfTokenManager,
+        LogService $logService
+    ): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        
+        // Validate CSRF token
+        $token = new CsrfToken('admin_api', $data['_token'] ?? '');
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide'], 403);
+        }
+
         $userIds = $data['ids'] ?? [];
 
         if (empty($userIds)) {
             return new JsonResponse(['success' => false, 'message' => 'Aucun utilisateur sélectionné'], 400);
         }
 
+        // Validate that all IDs are integers
+        foreach ($userIds as $id) {
+            if (!is_int($id) && !ctype_digit((string)$id)) {
+                return new JsonResponse(['success' => false, 'message' => 'ID utilisateur invalide'], 400);
+            }
+        }
+
         $count = 0;
+        $deletedIds = [];
+        $skippedIds = [];
         foreach ($userIds as $id) {
             $user = $em->getRepository(User::class)->find($id);
             if ($user && !in_array('ROLE_ADMINISTRATEUR', $user->getRoles())) {
+                // Détacher les entreprises liées à cet utilisateur
+                $entreprises = $em->getRepository(\App\Entity\Entreprise::class)->findBy(['proprietaire' => $user]);
+                foreach ($entreprises as $entreprise) {
+                    $entreprise->setProprietaire(null);
+                }
+                $deletedIds[] = $id;
                 $em->remove($user);
                 $count++;
             }
         }
 
-        $em->flush();
+        try {
+            $em->flush();
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la suppression : une contrainte empêche la suppression'], 500);
+        }
+        
+        // Log l'action
+        $logService->logUsersDeleted($deletedIds, $count);
 
         return new JsonResponse(['success' => true, 'message' => "$count utilisateur(s) supprimé(s)"]);
     }
 
     #[Route('/administrateur/users/{id}/edit', name: 'app_admin_user_edit', methods: ['POST'])]
-    public function editUser(int $id, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function editUser(int $id, Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher, CsrfTokenManagerInterface $csrfTokenManager, ValidatorInterface $validator, LogService $logService): JsonResponse
     {
         $user = $em->getRepository(User::class)->find($id);
         
@@ -97,24 +164,39 @@ final class AdminController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
+        // Validate CSRF token
+        $token = new CsrfToken('admin_api', $data['_token'] ?? '');
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide'], 403);
+        }
+
+        // Validate email format
         if (isset($data['email'])) {
+            $emailConstraint = new Assert\Email();
+            $errors = $validator->validate($data['email'], $emailConstraint);
+            if (count($errors) > 0) {
+                return new JsonResponse(['success' => false, 'message' => 'Format email invalide'], 400);
+            }
             $user->setEmail($data['email']);
         }
 
         if (isset($data['username'])) {
-            $user->setUsername($data['username']);
+            $user->setUsername(htmlspecialchars($data['username'], ENT_QUOTES, 'UTF-8'));
         }
 
         if (isset($data['prenom'])) {
-            $user->setPrenom($data['prenom']);
+            $user->setPrenom(htmlspecialchars($data['prenom'], ENT_QUOTES, 'UTF-8'));
         }
 
         if (isset($data['nom'])) {
-            $user->setNom($data['nom']);
+            $user->setNom(htmlspecialchars($data['nom'], ENT_QUOTES, 'UTF-8'));
         }
 
         if (isset($data['roles'])) {
-            $user->setRoles($data['roles']);
+            // Validate roles are valid
+            $allowedRoles = ['ROLE_USER', 'ROLE_ADMINISTRATION', 'ROLE_ADMINISTRATEUR'];
+            $roles = array_filter($data['roles'], fn($r) => in_array($r, $allowedRoles));
+            $user->setRoles($roles);
         }
 
         if (isset($data['partnaire_id'])) {
@@ -122,30 +204,72 @@ final class AdminController extends AbstractController
         }
 
         if (!empty($data['password'])) {
+            // Validate password length
+            if (strlen($data['password']) < 8) {
+                return new JsonResponse(['success' => false, 'message' => 'Le mot de passe doit contenir au moins 8 caractères'], 400);
+            }
             $hashedPassword = $passwordHasher->hashPassword($user, $data['password']);
             $user->setPassword($hashedPassword);
         }
 
         $em->flush();
 
+        // Log l'action
+        $changes = array_filter([
+            'email' => $data['email'] ?? null,
+            'username' => $data['username'] ?? null,
+            'roles' => $data['roles'] ?? null,
+            'partnaire_id' => $data['partnaire_id'] ?? null,
+            'password_changed' => !empty($data['password'])
+        ]);
+        $logService->logUserUpdated($user->getId(), $user->getEmail(), $changes);
+
         return new JsonResponse(['success' => true, 'message' => 'Utilisateur modifié']);
     }
 
     #[Route('/administrateur/users/create', name: 'app_admin_user_create', methods: ['POST'])]
-    public function createUser(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher): JsonResponse
+    public function createUser(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $passwordHasher, CsrfTokenManagerInterface $csrfTokenManager, ValidatorInterface $validator, LogService $logService): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+
+        // Validate CSRF token
+        $token = new CsrfToken('admin_api', $data['_token'] ?? '');
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide'], 403);
+        }
 
         if (empty($data['email']) || empty($data['password'])) {
             return new JsonResponse(['success' => false, 'message' => 'Email et mot de passe requis'], 400);
         }
 
+        // Validate email format
+        $emailConstraint = new Assert\Email();
+        $errors = $validator->validate($data['email'], $emailConstraint);
+        if (count($errors) > 0) {
+            return new JsonResponse(['success' => false, 'message' => 'Format email invalide'], 400);
+        }
+
+        // Validate password length
+        if (strlen($data['password']) < 8) {
+            return new JsonResponse(['success' => false, 'message' => 'Le mot de passe doit contenir au moins 8 caractères'], 400);
+        }
+
+        // Check if email already exists
+        $existingUser = $em->getRepository(User::class)->findOneBy(['email' => $data['email']]);
+        if ($existingUser) {
+            return new JsonResponse(['success' => false, 'message' => 'Un utilisateur avec cet email existe déjà'], 400);
+        }
+
         $user = new User();
         $user->setEmail($data['email']);
-        $user->setUsername($data['username'] ?? '');
-        $user->setPrenom($data['prenom'] ?? '');
-        $user->setNom($data['nom'] ?? '');
-        $user->setRoles($data['roles'] ?? ['ROLE_USER']);
+        $user->setUsername(htmlspecialchars($data['username'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $user->setPrenom(htmlspecialchars($data['prenom'] ?? '', ENT_QUOTES, 'UTF-8'));
+        $user->setNom(htmlspecialchars($data['nom'] ?? '', ENT_QUOTES, 'UTF-8'));
+        
+        // Validate roles
+        $allowedRoles = ['ROLE_USER', 'ROLE_ADMINISTRATION', 'ROLE_ADMINISTRATEUR'];
+        $roles = isset($data['roles']) ? array_filter($data['roles'], fn($r) => in_array($r, $allowedRoles)) : ['ROLE_USER'];
+        $user->setRoles($roles);
 
         if (isset($data['partnaire_id']) && $data['partnaire_id']) {
             $user->setPartnaireId($data['partnaire_id']);
@@ -156,6 +280,9 @@ final class AdminController extends AbstractController
 
         $em->persist($user);
         $em->flush();
+
+        // Log l'action
+        $logService->logUserCreated($user->getId(), $user->getEmail(), $user->getRoles());
 
         return new JsonResponse(['success' => true, 'message' => 'Utilisateur créé']);
     }
@@ -195,9 +322,16 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/administrateur/partenaires/delete', name: 'app_admin_partenaires_delete', methods: ['POST'])]
-    public function deletePartenaires(Request $request, PartenaireJsonService $partenaireService): JsonResponse
+    public function deletePartenaires(Request $request, PartenaireJsonService $partenaireService, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        
+        // Validate CSRF token
+        $token = new CsrfToken('admin_api', $data['_token'] ?? '');
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide'], 403);
+        }
+
         $partenaireIds = $data['ids'] ?? [];
 
         if (empty($partenaireIds)) {
@@ -210,7 +344,7 @@ final class AdminController extends AbstractController
     }
 
     #[Route('/administrateur/partenaires/{id}/edit', name: 'app_admin_partenaire_edit', methods: ['POST'])]
-    public function editPartenaire(string $id, Request $request, PartenaireJsonService $partenaireService): JsonResponse
+    public function editPartenaire(string $id, Request $request, PartenaireJsonService $partenaireService, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
         $partenaire = $partenaireService->findById($id);
         
@@ -220,14 +354,27 @@ final class AdminController extends AbstractController
 
         $data = json_decode($request->getContent(), true);
 
+        // Validate CSRF token
+        $token = new CsrfToken('admin_api', $data['_token'] ?? '');
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide'], 403);
+        }
+
         $partenaireService->update($id, $data);
 
         return new JsonResponse(['success' => true, 'message' => 'Partenaire modifié']);
     }
 
     #[Route('/administrateur/partenaires/create', name: 'app_admin_partenaire_create', methods: ['POST'])]
-    public function createPartenaire(Request $request, PartenaireJsonService $partenaireService): JsonResponse
+    public function createPartenaire(Request $request, PartenaireJsonService $partenaireService, CsrfTokenManagerInterface $csrfTokenManager): JsonResponse
     {
+        $data = json_decode($request->getContent(), true);
+
+        // Validate CSRF token
+        $token = new CsrfToken('admin_api', $data['_token'] ?? '');
+        if (!$csrfTokenManager->isTokenValid($token)) {
+            return new JsonResponse(['success' => false, 'message' => 'Token de sécurité invalide'], 403);
+        }
         $data = json_decode($request->getContent(), true);
 
         $partenaireService->create($data);

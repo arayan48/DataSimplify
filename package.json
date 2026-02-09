@@ -1,0 +1,20 @@
+{
+  "name": "datasimplify",
+  "version": "1.0.0",
+  "description": "DataSimplify project with Flowbite",
+  "private": true,
+  "scripts": {
+    "build": "tailwindcss -i ./assets/styles/app.css -o ./public/assets/output.css --minify",
+    "watch": "tailwindcss -i ./assets/styles/app.css -o ./public/assets/output.css --watch"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.0",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "echarts": "^6.0.0",
+    "flowbite": "^2.2.0"
+  }
+}

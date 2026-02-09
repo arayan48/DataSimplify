@@ -54,8 +54,11 @@ security:
         # Restrict admin pages
         - { path: '^/[a-z]{2}/administrateur', roles: ROLE_ADMINISTRATEUR }
         - { path: '^/[a-z]{2}/administrator', roles: ROLE_ADMINISTRATEUR }
-        # Require authentication for all other pages
-        - { path: '^/', roles: ROLE_USER }
+        # Restrict profile pages
+        - { path: '^/[a-z]{2}/profil', roles: ROLE_USER }
+        - { path: '^/[a-z]{2}/profile', roles: ROLE_USER }
+        # # Require authentication for all other pages
+        # - { path: '^/', roles: ROLE_USER }
 
 when@test:
     security:

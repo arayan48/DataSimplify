@@ -16,6 +16,7 @@ export default class extends Controller {
     ];
 
     static values = {
+        csrfToken: String,
         addUser: String,
         editUser: String,
         passwordRequired: String,
@@ -29,6 +30,9 @@ export default class extends Controller {
     connect() {
         console.log('Users controller loaded');
         this.currentUserData = null;
+        
+        // Exposer le controller globalement pour les onclick
+        window.usersController = this;
     }
 
     // Helper pour obtenir l'URL avec la locale
@@ -166,7 +170,8 @@ export default class extends Controller {
             prenom,
             nom,
             roles,
-            partnaire_id: partenaireId || null
+            partnaire_id: partenaireId || null,
+            _token: this.csrfTokenValue
         };
 
         if (password) {
@@ -221,10 +226,15 @@ export default class extends Controller {
 
         if (selectedIds.length === 0) return;
 
-        const confirmMessage = this.confirmDeleteMultipleValue.replace('{count}', selectedIds.length);
-        if (!confirm(confirmMessage)) {
-            return;
-        }
+        // Stocker les IDs pour la confirmation
+        this.selectedIdsToDelete = selectedIds;
+        
+        // Afficher la modale via la fonction globale
+        showDeleteMultipleUsersModal(selectedIds.length);
+    }
+
+    async executeDeleteMultiple() {
+        if (!this.selectedIdsToDelete || this.selectedIdsToDelete.length === 0) return;
 
         try {
             window.showLoader();
@@ -233,7 +243,7 @@ export default class extends Controller {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ids: selectedIds })
+                body: JSON.stringify({ ids: this.selectedIdsToDelete, _token: this.csrfTokenValue })
             });
 
             const result = await response.json();
@@ -241,6 +251,7 @@ export default class extends Controller {
 
             if (result.success) {
                 this.showNotification(result.message, 'success');
+                this.selectedIdsToDelete = null;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.showNotification(result.message, 'error');
@@ -466,10 +477,15 @@ export default class extends Controller {
         const userId = this.currentUserData.userId;
         const username = this.currentUserData.username || this.currentUserData.email;
 
-        const confirmMessage = this.confirmDeleteSingleValue.replace('{name}', username);
-        if (!confirm(confirmMessage)) {
-            return;
-        }
+        // Stocker les données pour la confirmation
+        this.userIdToDelete = userId;
+        
+        // Afficher la modale via la fonction globale
+        showDeleteUserModal(username, userId);
+    }
+
+    async executeDelete(userId) {
+        if (!userId) return;
 
         try {
             window.showLoader();
@@ -478,7 +494,7 @@ export default class extends Controller {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ ids: [parseInt(userId)] })
+                body: JSON.stringify({ ids: [parseInt(userId)], _token: this.csrfTokenValue })
             });
 
             const result = await response.json();
@@ -487,6 +503,7 @@ export default class extends Controller {
             if (result.success) {
                 this.closeDetailModal();
                 this.showNotification(result.message, 'success');
+                this.userIdToDelete = null;
                 setTimeout(() => window.location.reload(), 1000);
             } else {
                 this.showNotification(result.message, 'error');

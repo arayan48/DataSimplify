@@ -5,13 +5,15 @@
         <title>{% block title %}Welcome!{% endblock %}</title>
         <link rel="icon" href="{{ asset('img/logo/Logo CITC_Couleur gris.png') }}">
         {% block stylesheets %}
+            <link href="{{ asset('assets/output.css') }}" rel="stylesheet">
         {% endblock %}
 
         {% block javascripts %}
             {% block importmap %}{{ importmap('app') }}{% endblock %}
+            <script src="{{ asset('assets/flowbite.min.js') }}"></script>
         {% endblock %}
     </head>
-    <body data-controller="screen-resolution">
+    <body>
 
         <header>
             <div class="header-logo">

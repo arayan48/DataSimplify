@@ -1,14 +1,682 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}CITC - {{ 'app.administration.statistics'|trans }}{% endblock %}
+{% block title %}Statistiques générales{% endblock %}
 
 {% block stylesheets %}
-    {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('../assets/styles/administrateur/statistics.css') }}">
+{{ parent() }}
+<style>
+    .stats-container { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .stats-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 1.5rem; border-bottom: 1px solid #e5e7eb; }
+    .stats-header h1 { font-size: 1.5rem; font-weight: 600; color: #111827; margin: 0; }
+    .stats-header .subtitle { font-size: 0.875rem; color: #6b7280; margin-top: 0.25rem; }
+    .btn-back { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem; color: #374151; background: #f9fafb; border: 1px solid #d1d5db; border-radius: 6px; text-decoration: none; transition: all 0.15s; }
+    .btn-back:hover { background: #f3f4f6; border-color: #9ca3af; }
+    .tabs-container { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 1.5rem; }
+    .tabs-nav { display: flex; border-bottom: 1px solid #e5e7eb; overflow-x: auto; }
+    .tab-btn { padding: 1rem 1.5rem; font-size: 0.875rem; font-weight: 500; color: #6b7280; background: none; border: none; cursor: pointer; white-space: nowrap; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+    .tab-btn:hover { color: #374151; background: #f9fafb; }
+    .tab-btn.active { color: #2563eb; border-bottom-color: #2563eb; }
+    .tab-content { display: none; padding: 1.5rem; }
+    .tab-content.active { display: block; }
+    .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .summary-card { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.25rem; }
+    .summary-card .icon { width: 40px; height: 40px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 0.75rem; }
+    .summary-card .value { font-size: 1.5rem; font-weight: 700; color: #111827; }
+    .summary-card .label { font-size: 0.75rem; color: #6b7280; text-transform: uppercase; }
+    .summary-card .subvalue { font-size: 0.75rem; color: #9ca3af; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 1.5rem; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+    @media (max-width: 1024px) { .grid-2, .grid-4 { grid-template-columns: 1fr; } .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+    .stat-highlight { padding: 1.5rem; border-radius: 12px; color: white; text-align: center; }
+    .stat-highlight .big-number { font-size: 2.5rem; font-weight: 800; }
+    .stat-highlight .label { font-size: 0.875rem; opacity: 0.9; }
+    .chart-section { background: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem; margin-bottom: 1.5rem; }
+    .chart-section h3 { font-size: 1rem; font-weight: 600; color: #374151; margin-bottom: 1rem; }
+    .chart-wrapper { position: relative; height: 280px; }
+    .chart-wrapper.large { height: 350px; }
+    .avg-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 1rem; text-align: center; }
+    .avg-card .value { font-size: 1.5rem; font-weight: 700; color: #1d4ed8; }
+    .avg-card .label { font-size: 0.75rem; color: #3b82f6; }
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .data-table th, .data-table td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    .data-table th { background: #f9fafb; font-weight: 600; color: #374151; }
+    .data-table tr:hover { background: #f9fafb; }
+    .badge { display: inline-block; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 500; border-radius: 4px; }
+    .badge-blue { background: #dbeafe; color: #1d4ed8; }
+    .badge-green { background: #dcfce7; color: #166534; }
+    .badge-purple { background: #f3e8ff; color: #7c3aed; }
+    .badge-orange { background: #ffedd5; color: #c2410c; }
+    .badge-pink { background: #fce7f3; color: #be185d; }
+    .badge-gray { background: #f3f4f6; color: #374151; }
+    .top-list { list-style: none; padding: 0; margin: 0; }
+    .top-list li { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0; border-bottom: 1px solid #f3f4f6; }
+    .top-list li:last-child { border-bottom: none; }
+    .top-list .rank { width: 24px; height: 24px; border-radius: 50%; background: #e5e7eb; color: #374151; font-size: 0.75rem; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+    .top-list .rank.gold { background: #fef3c7; color: #b45309; }
+    .top-list .rank.silver { background: #f3f4f6; color: #6b7280; }
+    .top-list .rank.bronze { background: #fed7aa; color: #c2410c; }
+    .top-list .name { flex: 1; font-weight: 500; color: #111827; }
+    .top-list .value { font-weight: 600; color: #3b82f6; }
+</style>
 {% endblock %}
 
 {% block body %}
+{# Calculate all statistics #}
+{% set totalEntreprises = entreprises|length %}
+{% set totalWp2 = entreprises|filter(e => e.wp2 is not null)|length %}
+{% set totalWp5Events = entreprises|map(e => e.wp5Events|length)|reduce((a,b) => a+b, 0) %}
+{% set totalWp5Form = entreprises|map(e => e.wp5Formations|length)|reduce((a,b) => a+b, 0) %}
+{% set totalWp6 = entreprises|map(e => e.wp6|length)|reduce((a,b) => a+b, 0) %}
+{% set totalWp7 = entreprises|map(e => e.wp7|length)|reduce((a,b) => a+b, 0) %}
+{% set totalRelations = entreprises|map(e => e.miseEnRelations|length)|reduce((a,b) => a+b, 0) %}
+{% set totalWp = totalWp2 + totalWp5Events + totalWp5Form + totalWp6 + totalWp7 + totalRelations %}
 
+{# Moyennes #}
+{% set avgWp2 = totalEntreprises > 0 ? (totalWp2 / totalEntreprises)|round(2) : 0 %}
+{% set avgWp5Events = totalEntreprises > 0 ? (totalWp5Events / totalEntreprises)|round(2) : 0 %}
+{% set avgWp5Form = totalEntreprises > 0 ? (totalWp5Form / totalEntreprises)|round(2) : 0 %}
+{% set avgWp6 = totalEntreprises > 0 ? (totalWp6 / totalEntreprises)|round(2) : 0 %}
+{% set avgWp7 = totalEntreprises > 0 ? (totalWp7 / totalEntreprises)|round(2) : 0 %}
+{% set avgRelations = totalEntreprises > 0 ? (totalRelations / totalEntreprises)|round(2) : 0 %}
+{% set avgWpTotal = totalEntreprises > 0 ? (totalWp / totalEntreprises)|round(2) : 0 %}
 
+{# Entreprises par statut #}
+{% set entreprisesComplet = 0 %}
+{% set entreprisesPartiel = 0 %}
+{% set entreprisesVide = 0 %}
+{% for e in entreprises %}
+    {% set wpCount = (e.wp2 ? 1 : 0) + e.wp5Events|length + e.wp5Formations|length + e.wp6|length + e.wp7|length + e.miseEnRelations|length %}
+    {% if wpCount >= 3 %}
+        {% set entreprisesComplet = entreprisesComplet + 1 %}
+    {% elseif wpCount >= 1 %}
+        {% set entreprisesPartiel = entreprisesPartiel + 1 %}
+    {% else %}
+        {% set entreprisesVide = entreprisesVide + 1 %}
+    {% endif %}
+{% endfor %}
 
+{# Par année de création #}
+{% set annees = ['2020', '2021', '2022', '2023', '2024', '2025', '2026'] %}
+{% set e2020 = 0 %}{% set e2021 = 0 %}{% set e2022 = 0 %}{% set e2023 = 0 %}{% set e2024 = 0 %}{% set e2025 = 0 %}{% set e2026 = 0 %}
+{% set w2020 = 0 %}{% set w2021 = 0 %}{% set w2022 = 0 %}{% set w2023 = 0 %}{% set w2024 = 0 %}{% set w2025 = 0 %}{% set w2026 = 0 %}
+{% set w5_2020 = 0 %}{% set w5_2021 = 0 %}{% set w5_2022 = 0 %}{% set w5_2023 = 0 %}{% set w5_2024 = 0 %}{% set w5_2025 = 0 %}{% set w5_2026 = 0 %}
+{% set w6_2020 = 0 %}{% set w6_2021 = 0 %}{% set w6_2022 = 0 %}{% set w6_2023 = 0 %}{% set w6_2024 = 0 %}{% set w6_2025 = 0 %}{% set w6_2026 = 0 %}
+{% set w7_2020 = 0 %}{% set w7_2021 = 0 %}{% set w7_2022 = 0 %}{% set w7_2023 = 0 %}{% set w7_2024 = 0 %}{% set w7_2025 = 0 %}{% set w7_2026 = 0 %}
+{% for e in entreprises %}
+    {% set year = e.anneeCreation|default(2024)|number_format(0) %}
+    {% if year == '2020' %}{% set e2020 = e2020 + 1 %}{% if e.wp2 %}{% set w2020 = w2020 + 1 %}{% endif %}{% set w5_2020 = w5_2020 + e.wp5Events|length + e.wp5Formations|length %}{% set w6_2020 = w6_2020 + e.wp6|length %}{% set w7_2020 = w7_2020 + e.wp7|length %}
+    {% elseif year == '2021' %}{% set e2021 = e2021 + 1 %}{% if e.wp2 %}{% set w2021 = w2021 + 1 %}{% endif %}{% set w5_2021 = w5_2021 + e.wp5Events|length + e.wp5Formations|length %}{% set w6_2021 = w6_2021 + e.wp6|length %}{% set w7_2021 = w7_2021 + e.wp7|length %}
+    {% elseif year == '2022' %}{% set e2022 = e2022 + 1 %}{% if e.wp2 %}{% set w2022 = w2022 + 1 %}{% endif %}{% set w5_2022 = w5_2022 + e.wp5Events|length + e.wp5Formations|length %}{% set w6_2022 = w6_2022 + e.wp6|length %}{% set w7_2022 = w7_2022 + e.wp7|length %}
+    {% elseif year == '2023' %}{% set e2023 = e2023 + 1 %}{% if e.wp2 %}{% set w2023 = w2023 + 1 %}{% endif %}{% set w5_2023 = w5_2023 + e.wp5Events|length + e.wp5Formations|length %}{% set w6_2023 = w6_2023 + e.wp6|length %}{% set w7_2023 = w7_2023 + e.wp7|length %}
+    {% elseif year == '2024' %}{% set e2024 = e2024 + 1 %}{% if e.wp2 %}{% set w2024 = w2024 + 1 %}{% endif %}{% set w5_2024 = w5_2024 + e.wp5Events|length + e.wp5Formations|length %}{% set w6_2024 = w6_2024 + e.wp6|length %}{% set w7_2024 = w7_2024 + e.wp7|length %}
+    {% elseif year == '2025' %}{% set e2025 = e2025 + 1 %}{% if e.wp2 %}{% set w2025 = w2025 + 1 %}{% endif %}{% set w5_2025 = w5_2025 + e.wp5Events|length + e.wp5Formations|length %}{% set w6_2025 = w6_2025 + e.wp6|length %}{% set w7_2025 = w7_2025 + e.wp7|length %}
+    {% elseif year == '2026' %}{% set e2026 = e2026 + 1 %}{% if e.wp2 %}{% set w2026 = w2026 + 1 %}{% endif %}{% set w5_2026 = w5_2026 + e.wp5Events|length + e.wp5Formations|length %}{% set w6_2026 = w6_2026 + e.wp6|length %}{% set w7_2026 = w7_2026 + e.wp7|length %}
+    {% endif %}
+{% endfor %}
+{% set entreprisesParAnnee = [e2020, e2021, e2022, e2023, e2024, e2025, e2026] %}
+{% set wp2ParAnnee = [w2020, w2021, w2022, w2023, w2024, w2025, w2026] %}
+{% set wp5ParAnnee = [w5_2020, w5_2021, w5_2022, w5_2023, w5_2024, w5_2025, w5_2026] %}
+{% set wp6ParAnnee = [w6_2020, w6_2021, w6_2022, w6_2023, w6_2024, w6_2025, w6_2026] %}
+{% set wp7ParAnnee = [w7_2020, w7_2021, w7_2022, w7_2023, w7_2024, w7_2025, w7_2026] %}
+
+{# Secteurs #}
+{% set secteurs = {} %}
+{% for e in entreprises %}
+    {% set s = e.secteur|default('Non défini') %}
+    {% set secteurs = secteurs|merge({(s): (secteurs[s]|default(0)) + 1}) %}
+{% endfor %}
+{% set secteursLabels = [] %}{% set secteursData = [] %}{% for k, v in secteurs|slice(0, 8) %}{% set secteursLabels = secteursLabels|merge([k]) %}{% set secteursData = secteursData|merge([v]) %}{% endfor %}
+
+{# Villes #}
+{% set villes = {} %}
+{% for e in entreprises %}
+    {% set v = e.ville|default('Non définie') %}
+    {% set villes = villes|merge({(v): (villes[v]|default(0)) + 1}) %}
+{% endfor %}
+{% set villesLabels = [] %}{% set villesData = [] %}{% for k, v in villes|slice(0, 8) %}{% set villesLabels = villesLabels|merge([k]) %}{% set villesData = villesData|merge([v]) %}{% endfor %}
+
+{# Tailles #}
+{% set tailles = {} %}
+{% for e in entreprises %}
+    {% set t = e.taille|default('Non définie') %}
+    {% set tailles = tailles|merge({(t): (tailles[t]|default(0)) + 1}) %}
+{% endfor %}
+{% set taillesLabels = [] %}{% set taillesData = [] %}{% for k, v in tailles|slice(0, 5) %}{% set taillesLabels = taillesLabels|merge([k]) %}{% set taillesData = taillesData|merge([v]) %}{% endfor %}
+
+{# Partenaires #}
+{% set partenairesLabels = [] %}
+{% set partenairesData = [] %}
+{% for p in partenaires|slice(0, 10) %}
+    {% set partenairesLabels = partenairesLabels|merge([p.nom|default('N/A')]) %}
+    {% set partenairesData = partenairesData|merge([entreprises|filter(e => e.proprietaire and e.proprietaire.partnaireId == p.id)|length]) %}
+{% endfor %}
+
+{# Par mois - données réelles basées sur createdAt #}
+{% set monthsLabels = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'] %}
+{% set m1 = 0 %}{% set m2 = 0 %}{% set m3 = 0 %}{% set m4 = 0 %}{% set m5 = 0 %}{% set m6 = 0 %}
+{% set m7 = 0 %}{% set m8 = 0 %}{% set m9 = 0 %}{% set m10 = 0 %}{% set m11 = 0 %}{% set m12 = 0 %}
+{% for e in entreprises %}
+    {% if e.createdAt and e.createdAt|date('Y') == currentYear %}
+        {% set month = e.createdAt|date('n')|number_format(0) %}
+        {% if month == '1' %}{% set m1 = m1 + 1 %}
+        {% elseif month == '2' %}{% set m2 = m2 + 1 %}
+        {% elseif month == '3' %}{% set m3 = m3 + 1 %}
+        {% elseif month == '4' %}{% set m4 = m4 + 1 %}
+        {% elseif month == '5' %}{% set m5 = m5 + 1 %}
+        {% elseif month == '6' %}{% set m6 = m6 + 1 %}
+        {% elseif month == '7' %}{% set m7 = m7 + 1 %}
+        {% elseif month == '8' %}{% set m8 = m8 + 1 %}
+        {% elseif month == '9' %}{% set m9 = m9 + 1 %}
+        {% elseif month == '10' %}{% set m10 = m10 + 1 %}
+        {% elseif month == '11' %}{% set m11 = m11 + 1 %}
+        {% elseif month == '12' %}{% set m12 = m12 + 1 %}
+        {% endif %}
+    {% endif %}
+{% endfor %}
+{% set monthlyData = [m1, m2, m3, m4, m5, m6, m7, m8, m9, m10, m11, m12] %}
+
+<div class="stats-container">
+    
+    {# Header #}
+    <div class="stats-header">
+        <div>
+            <h1>{{ 'app.statistics.title'|trans }}</h1>
+            <p class="subtitle">{{ 'app.statistics.subtitle'|trans }} - {{ currentYear }}</p>
+        </div>
+        <a href="{{ path('app_administration_dashboard') }}" class="btn-back" data-turbo="false">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="16" height="16">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            {{ 'app.statistics.back'|trans }}
+        </a>
+    </div>
+
+    {# Big Stats Highlight #}
+    <div class="grid-4">
+        <div class="stat-highlight" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);">
+            <div class="big-number">{{ totalEntreprises }}</div>
+            <div class="label">{{ 'app.statistics.companies'|trans }}</div>
+        </div>
+        <div class="stat-highlight" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+            <div class="big-number">{{ totalWp }}</div>
+            <div class="label">{{ 'app.statistics.work_packages'|trans }}</div>
+        </div>
+        <div class="stat-highlight" style="background: linear-gradient(135deg, #a855f7 0%, #7c3aed 100%);">
+            <div class="big-number">{{ avgWpTotal }}</div>
+            <div class="label">{{ 'app.statistics.avg_wp_company'|trans }}</div>
+        </div>
+        <div class="stat-highlight" style="background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);">
+            <div class="big-number">{{ partenaires|length }}</div>
+            <div class="label">{{ 'app.statistics.partners'|trans }}</div>
+        </div>
+    </div>
+
+    {# Tabs #}
+    <div class="tabs-container">
+        <div class="tabs-nav">
+            <button class="tab-btn active" data-tab="tab-overview">{{ 'app.statistics.tab_overview'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-repartition">{{ 'app.statistics.tab_distribution'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-evolution">{{ 'app.statistics.tab_evolution'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-moyennes">{{ 'app.statistics.tab_averages'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-partenaires">{{ 'app.statistics.tab_partners'|trans }}</button>
+            <button class="tab-btn" data-tab="tab-details">{{ 'app.statistics.tab_details'|trans }}</button>
+        </div>
+
+        {# Tab: Overview #}
+        <div id="tab-overview" class="tab-content active">
+            <div class="grid-2">
+                <div class="chart-section">
+                    <h3>📊 {{ 'app.statistics.wp_distribution'|trans }}</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="wpPieChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-section">
+                    <h3>🎯 {{ 'app.statistics.company_status'|trans }}</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="statusDonutChart"></canvas>
+                    </div>
+                    <div class="grid-3" style="margin-top: 1rem;">
+                        <div class="avg-card" style="background: #f0fdf4; border-color: #86efac;">
+                            <div class="value" style="color: #166534;">{{ entreprisesComplet }}</div>
+                            <div class="label" style="color: #16a34a;">{{ 'app.statistics.complete'|trans }} ({{ 'app.statistics.complete_desc'|trans }})</div>
+                        </div>
+                        <div class="avg-card" style="background: #fef3c7; border-color: #fcd34d;">
+                            <div class="value" style="color: #b45309;">{{ entreprisesPartiel }}</div>
+                            <div class="label" style="color: #d97706;">{{ 'app.statistics.partial'|trans }} ({{ 'app.statistics.partial_desc'|trans }})</div>
+                        </div>
+                        <div class="avg-card" style="background: #fee2e2; border-color: #fca5a5;">
+                            <div class="value" style="color: #dc2626;">{{ entreprisesVide }}</div>
+                            <div class="label" style="color: #ef4444;">{{ 'app.statistics.empty'|trans }} ({{ 'app.statistics.empty_desc'|trans }})</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>📈 {{ 'app.statistics.monthly_trend'|trans }} {{ currentYear }}</h3>
+                <div class="chart-wrapper large">
+                    <canvas id="monthlyTrendChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        {# Tab: Répartition #}
+        <div id="tab-repartition" class="tab-content">
+            <div class="grid-2">
+                <div class="chart-section">
+                    <h3>🏭 {{ 'app.statistics.activity_sectors'|trans }}</h3>
+                    <div class="chart-wrapper large">
+                        <canvas id="secteurPolarChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-section">
+                    <h3>📍 {{ 'app.statistics.city_distribution'|trans }}</h3>
+                    <div class="chart-wrapper large">
+                        <canvas id="villesPieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <div class="chart-section">
+                    <h3>📏 {{ 'app.statistics.company_size'|trans }}</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="tailleDonutChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-section">
+                    <h3>📋 {{ 'app.statistics.sector_detail'|trans }}</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>{{ 'app.statistics.sector'|trans }}</th><th>{{ 'app.statistics.count'|trans }}</th><th>{{ 'app.statistics.percent'|trans }}</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for s, c in secteurs|sort|reverse|slice(0, 8) %}
+                            <tr>
+                                <td>{{ s }}</td>
+                                <td><span class="badge badge-blue">{{ c }}</span></td>
+                                <td>{{ totalEntreprises > 0 ? ((c / totalEntreprises) * 100)|round(1) : 0 }}%</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        {# Tab: Évolution #}
+        <div id="tab-evolution" class="tab-content">
+            <div class="chart-section">
+                <h3>📅 {{ 'app.statistics.yearly_evolution'|trans }} (2020-2026)</h3>
+                <div class="chart-wrapper large">
+                    <canvas id="yearEvolutionChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>📊 {{ 'app.statistics.wp_by_year'|trans }}</h3>
+                <div class="chart-wrapper large">
+                    <canvas id="wpByYearChart"></canvas>
+                </div>
+            </div>
+
+            <div class="summary-grid">
+                {% for i in 0..6 %}
+                <div class="summary-card">
+                    <div class="label">{{ annees[i] }}</div>
+                    <div class="value">{{ entreprisesParAnnee[i] }}</div>
+                    <div class="subvalue">{{ 'app.statistics.companies_created'|trans }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        {# Tab: Moyennes #}
+        <div id="tab-moyennes" class="tab-content">
+            <div class="grid-2">
+                <div class="chart-section">
+                    <h3>🎯 {{ 'app.statistics.avg_radar'|trans }}</h3>
+                    <div class="chart-wrapper large">
+                        <canvas id="avgRadarChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="chart-section">
+                    <h3>📊 {{ 'app.statistics.avg_detailed'|trans }}</h3>
+                    <div class="summary-grid" style="grid-template-columns: repeat(2, 1fr);">
+                        <div class="avg-card">
+                            <div class="value">{{ avgWp2 }}</div>
+                            <div class="label">WP2 / Entreprise</div>
+                        </div>
+                        <div class="avg-card" style="background: #ecfdf5; border-color: #6ee7b7;">
+                            <div class="value" style="color: #059669;">{{ avgWp5Events }}</div>
+                            <div class="label" style="color: #10b981;">WP5 Events / Entreprise</div>
+                        </div>
+                        <div class="avg-card" style="background: #faf5ff; border-color: #d8b4fe;">
+                            <div class="value" style="color: #7c3aed;">{{ avgWp5Form }}</div>
+                            <div class="label" style="color: #a855f7;">WP5 Form. / Entreprise</div>
+                        </div>
+                        <div class="avg-card" style="background: #fff7ed; border-color: #fed7aa;">
+                            <div class="value" style="color: #ea580c;">{{ avgWp6 }}</div>
+                            <div class="label" style="color: #f97316;">WP6 / Entreprise</div>
+                        </div>
+                        <div class="avg-card" style="background: #fef2f2; border-color: #fecaca;">
+                            <div class="value" style="color: #dc2626;">{{ avgWp7 }}</div>
+                            <div class="label" style="color: #ef4444;">WP7 / Entreprise</div>
+                        </div>
+                        <div class="avg-card" style="background: #fdf2f8; border-color: #fbcfe8;">
+                            <div class="value" style="color: #db2777;">{{ avgRelations }}</div>
+                            <div class="label" style="color: #ec4899;">Relations / Entreprise</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; padding: 1.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; text-align: center; color: white;">
+                        <div style="font-size: 2.5rem; font-weight: 800;">{{ avgWpTotal }}</div>
+                        <div style="opacity: 0.9;">{{ 'app.statistics.avg_total'|trans }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>📈 {{ 'app.statistics.compare_totals'|trans }}</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>{{ 'app.statistics.type'|trans }}</th>
+                            <th>{{ 'app.statistics.total'|trans }}</th>
+                            <th>{{ 'app.statistics.average'|trans }}</th>
+                            <th>{{ 'app.statistics.percent_total'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge badge-blue">WP2 DMAO</span></td>
+                            <td>{{ totalWp2 }}</td>
+                            <td>{{ avgWp2 }}</td>
+                            <td>{{ totalWp > 0 ? ((totalWp2 / totalWp) * 100)|round(1) : 0 }}%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-green">WP5 Events</span></td>
+                            <td>{{ totalWp5Events }}</td>
+                            <td>{{ avgWp5Events }}</td>
+                            <td>{{ totalWp > 0 ? ((totalWp5Events / totalWp) * 100)|round(1) : 0 }}%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-purple">WP5 Form.</span></td>
+                            <td>{{ totalWp5Form }}</td>
+                            <td>{{ avgWp5Form }}</td>
+                            <td>{{ totalWp > 0 ? ((totalWp5Form / totalWp) * 100)|round(1) : 0 }}%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-orange">WP6</span></td>
+                            <td>{{ totalWp6 }}</td>
+                            <td>{{ avgWp6 }}</td>
+                            <td>{{ totalWp > 0 ? ((totalWp6 / totalWp) * 100)|round(1) : 0 }}%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge" style="background:#fee2e2;color:#dc2626;">WP7</span></td>
+                            <td>{{ totalWp7 }}</td>
+                            <td>{{ avgWp7 }}</td>
+                            <td>{{ totalWp > 0 ? ((totalWp7 / totalWp) * 100)|round(1) : 0 }}%</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge badge-pink">{{ 'app.statistics.relations'|trans }}</span></td>
+                            <td>{{ totalRelations }}</td>
+                            <td>{{ avgRelations }}</td>
+                            <td>{{ totalWp > 0 ? ((totalRelations / totalWp) * 100)|round(1) : 0 }}%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# Tab: Partenaires #}
+        <div id="tab-partenaires" class="tab-content">
+            <div class="chart-section">
+                <h3>🏢 {{ 'app.statistics.companies_by_partner'|trans }}</h3>
+                <div class="chart-wrapper large">
+                    <canvas id="partenaireBarChart"></canvas>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>📋 {{ 'app.statistics.partner_detail'|trans }}</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>{{ 'app.statistics.partner'|trans }}</th>
+                            <th>{{ 'app.statistics.companies'|trans }}</th>
+                            <th>WP2</th>
+                            <th>WP5</th>
+                            <th>WP6</th>
+                            <th>WP7</th>
+                            <th>{{ 'app.statistics.relations'|trans }}</th>
+                            <th>{{ 'app.statistics.total_wp'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in partenaires %}
+                        {% set pEntreprises = entreprises|filter(e => e.proprietaire and e.proprietaire.partnaireId == p.id) %}
+                        {% set pWp2 = pEntreprises|filter(e => e.wp2 is not null)|length %}
+                        {% set pWp5 = pEntreprises|map(e => e.wp5Events|length + e.wp5Formations|length)|reduce((a,b) => a+b, 0) %}
+                        {% set pWp6 = pEntreprises|map(e => e.wp6|length)|reduce((a,b) => a+b, 0) %}
+                        {% set pWp7 = pEntreprises|map(e => e.wp7|length)|reduce((a,b) => a+b, 0) %}
+                        {% set pRel = pEntreprises|map(e => e.miseEnRelations|length)|reduce((a,b) => a+b, 0) %}
+                        <tr>
+                            <td style="font-weight:500;">{{ p.nom|default('N/A') }}</td>
+                            <td><span class="badge badge-gray">{{ pEntreprises|length }}</span></td>
+                            <td><span class="badge badge-blue">{{ pWp2 }}</span></td>
+                            <td><span class="badge badge-green">{{ pWp5 }}</span></td>
+                            <td><span class="badge badge-purple">{{ pWp6 }}</span></td>
+                            <td><span class="badge badge-orange">{{ pWp7 }}</span></td>
+                            <td><span class="badge badge-pink">{{ pRel }}</span></td>
+                            <td><strong>{{ pWp2 + pWp5 + pWp6 + pWp7 + pRel }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        {# Tab: Détails #}
+        <div id="tab-details" class="tab-content">
+            <div class="grid-3">
+                <div class="chart-section">
+                    <h3>🏆 {{ 'app.statistics.top_companies'|trans }}</h3>
+                    <ul class="top-list">
+                        {% set sorted = entreprises|sort((a, b) => 
+                            ((b.wp2 ? 1 : 0) + b.wp5Events|length + b.wp5Formations|length + b.wp6|length + b.wp7|length + b.miseEnRelations|length) - 
+                            ((a.wp2 ? 1 : 0) + a.wp5Events|length + a.wp5Formations|length + a.wp6|length + a.wp7|length + a.miseEnRelations|length)
+                        ) %}
+                        {% for e in sorted|slice(0, 10) %}
+                        <li>
+                            <span class="rank {% if loop.index == 1 %}gold{% elseif loop.index == 2 %}silver{% elseif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
+                            <span class="name">{{ e.nom }}</span>
+                            <span class="value">{{ (e.wp2 ? 1 : 0) + e.wp5Events|length + e.wp5Formations|length + e.wp6|length + e.wp7|length + e.miseEnRelations|length }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="chart-section">
+                    <h3>📍 {{ 'app.statistics.top_cities'|trans }}</h3>
+                    <ul class="top-list">
+                        {% for v, c in villes|sort|reverse|slice(0, 10) %}
+                        <li>
+                            <span class="rank {% if loop.index == 1 %}gold{% elseif loop.index == 2 %}silver{% elseif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
+                            <span class="name">{{ v }}</span>
+                            <span class="value">{{ c }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                
+                <div class="chart-section">
+                    <h3>🏭 {{ 'app.statistics.top_sectors'|trans }}</h3>
+                    <ul class="top-list">
+                        {% for s, c in secteurs|sort|reverse|slice(0, 10) %}
+                        <li>
+                            <span class="rank {% if loop.index == 1 %}gold{% elseif loop.index == 2 %}silver{% elseif loop.index == 3 %}bronze{% endif %}">{{ loop.index }}</span>
+                            <span class="name">{{ s }}</span>
+                            <span class="value">{{ c }}</span>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <h3>📋 {{ 'app.statistics.all_companies'|trans }}</h3>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>{{ 'app.statistics.company'|trans }}</th>
+                            <th>{{ 'app.statistics.sector'|trans }}</th>
+                            <th>{{ 'app.administration.city'|trans }}</th>
+                            <th>{{ 'app.statistics.year'|trans }}</th>
+                            <th>WP2</th>
+                            <th>WP5</th>
+                            <th>WP6</th>
+                            <th>WP7</th>
+                            <th>{{ 'app.statistics.rel'|trans }}</th>
+                            <th>{{ 'app.statistics.total'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for e in entreprises|slice(0, 30) %}
+                        {% set eTotal = (e.wp2 ? 1 : 0) + e.wp5Events|length + e.wp5Formations|length + e.wp6|length + e.wp7|length + e.miseEnRelations|length %}
+                        <tr>
+                            <td style="font-weight:500;">{{ e.nom }}</td>
+                            <td>{{ e.secteur|default('—') }}</td>
+                            <td>{{ e.ville|default('—') }}</td>
+                            <td>{{ e.anneeCreation|default('—') }}</td>
+                            <td>{% if e.wp2 %}<span class="badge badge-blue">✓</span>{% else %}—{% endif %}</td>
+                            <td><span class="badge badge-green">{{ e.wp5Events|length + e.wp5Formations|length }}</span></td>
+                            <td><span class="badge badge-purple">{{ e.wp6|length }}</span></td>
+                            <td><span class="badge badge-orange">{{ e.wp7|length }}</span></td>
+                            <td><span class="badge badge-pink">{{ e.miseEnRelations|length }}</span></td>
+                            <td><strong>{{ eTotal }}</strong></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% if entreprises|length > 30 %}
+                <p style="text-align:center;color:#6b7280;padding:1rem;font-size:0.875rem;">
+                    Affichage des 30 premières entreprises sur {{ entreprises|length }}
+                </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+{# Chart data - defined in body block where Twig variables are available #}
+window.wpPieChartData = {
+    labels: ['WP2 DMAO', 'WP5 Événements', 'WP5 Formations', 'WP6 Projets', 'WP7 Investissements', 'Mises en Relation'],
+    datasets: [{
+        data: [{{ totalWp2 }}, {{ totalWp5Events }}, {{ totalWp5Form }}, {{ totalWp6 }}, {{ totalWp7 }}, {{ totalRelations }}],
+        backgroundColor: ['#3b82f6', '#22c55e', '#10b981', '#a855f7', '#f97316', '#ec4899'],
+        borderWidth: 2,
+        borderColor: '#fff'
+    }]
+};
+window.statusDonutChartData = {
+    labels: ['Complet (3+ WP)', 'Partiel (1-2 WP)', 'Vide (0 WP)'],
+    datasets: [{
+        data: [{{ entreprisesComplet }}, {{ entreprisesPartiel }}, {{ entreprisesVide }}],
+        backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'],
+        borderWidth: 0
+    }]
+};
+window.yearEvolutionChartData = {
+    labels: {{ annees|json_encode|raw }},
+    datasets: [{
+        label: 'Entreprises créées',
+        data: {{ entreprisesParAnnee|json_encode|raw }},
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+        tension: 0.4
+    }]
+};
+window.avgRadarChartData = {
+    labels: ['WP2', 'WP5 Events', 'WP5 Form.', 'WP6', 'WP7', 'Relations'],
+    datasets: [{
+        label: 'Moyenne par entreprise',
+        data: [{{ avgWp2 }}, {{ avgWp5Events }}, {{ avgWp5Form }}, {{ avgWp6 }}, {{ avgWp7 }}, {{ avgRelations }}],
+        backgroundColor: 'rgba(139, 92, 246, 0.2)',
+        borderColor: '#8b5cf6',
+        borderWidth: 2,
+        pointBackgroundColor: '#8b5cf6'
+    }]
+};
+window.secteurPolarChartData = {
+    labels: {{ secteursLabels|json_encode|raw }},
+    datasets: [{
+        data: {{ secteursData|json_encode|raw }},
+        backgroundColor: ['#3b82f6', '#22c55e', '#a855f7', '#f97316', '#ec4899', '#14b8a6', '#f59e0b', '#6366f1', '#84cc16', '#06b6d4']
+    }]
+};
+window.wpByYearChartData = {
+    labels: {{ annees|json_encode|raw }},
+    datasets: [
+        { label: 'WP2', data: {{ wp2ParAnnee|json_encode|raw }}, backgroundColor: '#3b82f6' },
+        { label: 'WP5', data: {{ wp5ParAnnee|json_encode|raw }}, backgroundColor: '#22c55e' },
+        { label: 'WP6', data: {{ wp6ParAnnee|json_encode|raw }}, backgroundColor: '#a855f7' },
+        { label: 'WP7', data: {{ wp7ParAnnee|json_encode|raw }}, backgroundColor: '#f97316' }
+    ]
+};
+window.partenaireBarChartData = {
+    labels: {{ partenairesLabels|json_encode|raw }},
+    datasets: [{
+        label: 'Entreprises',
+        data: {{ partenairesData|json_encode|raw }},
+        backgroundColor: '#6366f1',
+        borderRadius: 4
+    }]
+};
+window.villesPieChartData = {
+    labels: {{ villesLabels|json_encode|raw }},
+    datasets: [{
+        data: {{ villesData|json_encode|raw }},
+        backgroundColor: ['#3b82f6', '#22c55e', '#a855f7', '#f97316', '#ec4899', '#14b8a6', '#f59e0b', '#6366f1']
+    }]
+};
+window.tailleDonutChartData = {
+    labels: {{ taillesLabels|json_encode|raw }},
+    datasets: [{
+        data: {{ taillesData|json_encode|raw }},
+        backgroundColor: ['#f59e0b', '#10b981', '#6366f1', '#a855f7', '#f97316', '#22c55e']
+    }]
+};
+window.monthlyTrendChartData = {
+    labels: {{ monthsLabels|json_encode|raw }},
+    datasets: [{
+        label: 'Nouvelles entreprises {{ currentYear }}',
+        data: {{ monthlyData|json_encode|raw }},
+        borderColor: '#f97316',
+        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+        fill: true,
+        tension: 0.4
+    }]
+};
+
+// Initialize charts now that data is ready
+if (typeof window.initAllCharts === 'function') {
+    window.initAllCharts();
+} else {
+    // If initAllCharts not yet available, wait for it
+    window.addEventListener('load', function() {
+        if (typeof window.initAllCharts === 'function') {
+            window.initAllCharts();
+        }
+    });
+}
+</script>
 {% endblock %}
