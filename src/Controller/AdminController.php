@@ -338,17 +338,20 @@ final class AdminController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'Aucun partenaire sélectionné'], 400);
         }
 
-        // Convertir les IDs en strings pour correspondre au format JSON
-        $partenaireIds = array_map('strval', $partenaireIds);
-        
-        // Log pour déboguer
-        error_log('Tentative de suppression des partenaires: ' . json_encode($partenaireIds));
-        
-        $count = $partenaireService->deleteMultiple($partenaireIds);
-        
-        error_log('Nombre de partenaires supprimés: ' . $count);
-
-        return new JsonResponse(['success' => true, 'message' => "$count partenaire(s) supprimé(s)"]);
+        try {
+            // Convertir les IDs en strings pour correspondre au format JSON
+            $partenaireIds = array_map('strval', $partenaireIds);
+            
+            $count = $partenaireService->deleteMultiple($partenaireIds);
+            
+            if ($count > 0) {
+                return new JsonResponse(['success' => true, 'message' => "$count partenaire(s) supprimé(s)"]);
+            } else {
+                return new JsonResponse(['success' => false, 'message' => 'Aucun partenaire n\'a été supprimé'], 400);
+            }
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Erreur lors de la suppression: ' . $e->getMessage()], 500);
+        }
     }
 
     #[Route('/administrateur/partenaires/{id}/edit', name: 'app_admin_partenaire_edit', methods: ['POST'])]

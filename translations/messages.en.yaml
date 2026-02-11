@@ -78,6 +78,10 @@ app:
       add_partner: Add a Partner
       edit_partner: Edit Partner
       confirm_delete: "Are you sure you want to delete {count} partner(s)?"
+      confirm_delete_message: "Are you sure you want to delete the selected partners?"
+      selected_count: "partner(s) selected"
+      cancel: "No, cancel"
+      confirm_delete_btn: "Yes, delete"
       error: An error occurred
       select_user: Please select at least one user
       users_added: "{count} user(s) added"

@@ -415,50 +415,57 @@ export default class extends Controller {
     async deleteSelected() {
         const selectedIds = this.checkboxTargets
             .filter(cb => cb.checked)
-            .map(cb => cb.value);
+            .map(cb => cb.value); // Garder en string
 
-        if (selectedIds.length === 0) return;
+        if (selectedIds.length === 0) {
+            this.showNotification('Veuillez sélectionner au moins un partenaire', 'error');
+            return;
+        }
 
         // Stocker les IDs pour la confirmation
         this.selectedIdsToDelete = selectedIds;
         
-        // Afficher la modale via la fonction globale
+        // Afficher la modale de confirmation
         showDeleteMultiplePartenairesModal(selectedIds.length);
     }
 
     async executeDeleteMultiple() {
-        if (!this.selectedIdsToDelete || this.selectedIdsToDelete.length === 0) return;
-
-        console.log('executeDeleteMultiple - IDs à supprimer:', this.selectedIdsToDelete);
-        console.log('Type des IDs:', this.selectedIdsToDelete.map(id => typeof id));
+        if (!this.selectedIdsToDelete || this.selectedIdsToDelete.length === 0) {
+            return;
+        }
 
         try {
             window.showLoader();
-            const url = this.getLocalizedUrl('/administrateur/partenaires/delete');
-            console.log('URL de suppression:', url);
             
-            const body = { ids: this.selectedIdsToDelete, _token: this.csrfTokenValue };
-            console.log('Body envoyé:', JSON.stringify(body));
+            const url = this.getLocalizedUrl('/administrateur/partenaires/delete');
             
             const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify(body)
+                body: JSON.stringify({
+                    ids: this.selectedIdsToDelete,
+                    _token: this.csrfTokenValue
+                })
             });
 
-            console.log('Status de la réponse:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
             const result = await response.json();
-            console.log('Résultat:', result);
             window.hideLoader();
 
             if (result.success) {
                 this.showNotification(result.message, 'success');
                 this.selectedIdsToDelete = null;
-                setTimeout(() => window.location.reload(), 1000);
+                // Recharger la page après un court délai
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
             } else {
-                this.showNotification(result.message, 'error');
+                this.showNotification(result.message || 'Erreur lors de la suppression', 'error');
             }
         } catch (error) {
             window.hideLoader();

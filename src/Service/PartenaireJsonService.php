@@ -152,30 +152,29 @@ class PartenaireJsonService
 
     /**
      * Supprime plusieurs partenaires
-     * @param array $ids
+     * @param array $ids Liste des IDs (strings) à supprimer
      * @return int Nombre de partenaires supprimés
      */
     public function deleteMultiple(array $ids): int
     {
+        if (empty($ids)) {
+            return 0;
+        }
+
         $partenaires = $this->findAll();
         $initialCount = count($partenaires);
-        
-        error_log('PartenaireJsonService::deleteMultiple - IDs à supprimer: ' . json_encode($ids));
-        error_log('PartenaireJsonService::deleteMultiple - Partenaires avant: ' . json_encode(array_column($partenaires, 'id')));
 
+        // Filtrer pour ne garder que les partenaires dont l'ID n'est PAS dans la liste
         $partenaires = array_filter($partenaires, function($partenaire) use ($ids) {
-            $shouldKeep = !in_array($partenaire['id'], $ids, true);
-            error_log('Partenaire ID: ' . $partenaire['id'] . ' - Type: ' . gettype($partenaire['id']) . ' - Garder: ' . ($shouldKeep ? 'oui' : 'non'));
-            return $shouldKeep;
+            // Comparaison stricte car les IDs JSON sont des strings
+            return !in_array($partenaire['id'], $ids, true);
         });
-        
-        error_log('PartenaireJsonService::deleteMultiple - Partenaires après: ' . json_encode(array_column($partenaires, 'id')));
 
         $deletedCount = $initialCount - count($partenaires);
         
         if ($deletedCount > 0) {
+            // Réindexer le tableau avant de sauvegarder
             $this->save(array_values($partenaires));
-            error_log('PartenaireJsonService::deleteMultiple - Fichier JSON sauvegardé');
         }
 
         return $deletedCount;
